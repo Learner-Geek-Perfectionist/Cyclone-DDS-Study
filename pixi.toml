@@ -1,0 +1,36 @@
+[project]
+name = "cyclone-dds-study"
+version = "0.1.0"
+description = "Cyclone DDS 学习环境"
+authors = ["ouyangzhaoxin"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[tasks]
+# 构建任务
+configure = "cmake -B build -S cyclonedds -DCMAKE_INSTALL_PREFIX=install -DBUILD_EXAMPLES=ON"
+build = { cmd = "cmake --build build --parallel", depends-on = ["configure"] }
+install = { cmd = "cmake --install build", depends-on = ["build"] }
+clean = "rm -rf build install"
+rebuild = { cmd = "./build.sh rebuild" }
+
+# 运行示例
+hello-pub = "build/bin/HelloworldPublisher"
+hello-sub = "build/bin/HelloworldSubscriber"
+roundtrip-ping = "build/bin/RoundtripPing"
+roundtrip-pong = "build/bin/RoundtripPong"
+throughput-pub = "build/bin/ThroughputPublisher"
+throughput-sub = "build/bin/ThroughputSubscriber"
+
+[dependencies]
+# 构建工具
+cmake = ">=3.16"
+ninja = ">=1.11"
+pkg-config = ">=0.29"
+
+# 编译器
+compilers = ">=1.0"
+
+# 可选依赖
+openssl = ">=3.0"      # 用于 DDS Security
+bison = ">=3.8"        # 用于 IDL 编译器

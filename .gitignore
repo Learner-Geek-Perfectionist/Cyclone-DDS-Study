@@ -1,0 +1,41 @@
+# 构建目录
+build/
+install/
+
+# 日志
+logs/
+
+# 编译数据库（保留根目录的供 IDE 使用）
+# compile_commands.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Pixi
+.pixi/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+.eggs/
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+
+# 测试输出
+test-results/
+coverage/

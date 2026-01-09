@@ -32,5 +32,5 @@ pkg-config = ">=0.29"
 compilers = ">=1.0"
 
 # 可选依赖
-openssl = ">=3.0"      # 用于 DDS Security
-bison = ">=3.8"        # 用于 IDL 编译器
+openssl = ">=3.0" # 用于 DDS Security
+bison = ">=3.8"   # 用于 IDL 编译器

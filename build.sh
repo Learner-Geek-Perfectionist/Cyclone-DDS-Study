@@ -78,8 +78,8 @@ show_help() {
     echo "  --no-log - 禁用日志文件，保持终端颜色输出"
     echo ""
     echo "CMake 常用选项:"
-    echo "  -DCMAKE_BUILD_TYPE=Debug|Release|RelWithDebInfo"
-    echo "  -DBUILD_EXAMPLES=ON|OFF          # 编译示例（默认 ON）"
+    echo "  -DCMAKE_BUILD_TYPE=Debug|Release|RelWithDebInfo  # 默认 Debug"
+    echo "  -DBUILD_EXAMPLES=ON|OFF          # 默认 ON"
     echo "  -DBUILD_TESTING=ON|OFF           # 编译测试"
     echo "  -DENABLE_SECURITY=ON|OFF         # 启用 DDS Security"
     echo "  -DENABLE_SSL=ON|OFF              # 启用 SSL 支持"
@@ -142,6 +142,7 @@ do_cmake() {
     local cmake_cmd="cmake -B $BUILD_DIR -S $SOURCE_DIR \
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        -DCMAKE_BUILD_TYPE=Debug \
         -DBUILD_EXAMPLES=ON \
         $CMAKE_ARGS"
     

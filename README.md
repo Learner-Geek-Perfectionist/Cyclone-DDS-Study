@@ -15,17 +15,21 @@ Cyclone DDS 是 Eclipse 基金会下的高性能开源 DDS（Data Distribution S
 
 ```
 cyclone-dds-study/
-├── .cursor/rules/           # Cursor AI 导师规则
-│   └── cyclone-dds-tutor.mdc
+├── cyclonedds/               # 官方源码 (git submodule)
+│   ├── docs/                 # 官方文档
+│   ├── examples/             # 官方示例
+│   └── src/                  # 源码
 ├── progress/                 # 学习进度追踪
 │   └── tracker.md
 ├── sessions/                 # 学习会话记录
 │   └── SESSION-TEMPLATE.md
 ├── notes/                    # 学习笔记
 ├── examples/                 # 自己编写的示例代码
-├── cyclonedds/              # 官方源码 (git submodule)
-├── pixi.toml                # 依赖管理
-├── build.sh                 # 构建脚本
+├── build/                    # 构建输出目录 (自动生成)
+├── install/                  # 安装目录 (自动生成)
+├── logs/                     # 构建日志 (自动生成)
+├── pixi.toml                 # Pixi 依赖与任务管理
+├── build.sh                  # 构建脚本
 └── README.md
 ```
 
@@ -63,14 +67,15 @@ pixi shell
 ### 3. 运行示例
 
 ```bash
-# 进入示例目录
-cd cyclonedds/build/bin
-
 # 终端 1：运行订阅者
-./HelloworldSubscriber
+pixi run hello-sub
 
 # 终端 2：运行发布者
-./HelloworldPublisher
+pixi run hello-pub
+
+# 或者直接运行编译好的程序
+./build/bin/HelloworldSubscriber
+./build/bin/HelloworldPublisher
 ```
 
 ## 📚 学习方法

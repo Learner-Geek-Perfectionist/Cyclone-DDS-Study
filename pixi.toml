@@ -6,13 +6,6 @@ authors = ["ouyangzhaoxin"]
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 
-[tasks]
-# 构建任务
-configure = "cmake -B build -S cyclonedds -DCMAKE_INSTALL_PREFIX=install -DBUILD_EXAMPLES=ON"
-build = { cmd = "cmake --build build --parallel", depends-on = ["configure"] }
-install = { cmd = "cmake --install build", depends-on = ["build"] }
-clean = "rm -rf build install"
-rebuild = { cmd = "./build.sh rebuild" }
 
 # 运行示例
 hello-pub = "build/bin/HelloworldPublisher"

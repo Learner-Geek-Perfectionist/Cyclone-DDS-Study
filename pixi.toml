@@ -1,5 +1,5 @@
 [workspace]
-name = "cyclone-dds-study"
+name = "Cyclone-DDS-Study"
 version = "0.1.0"
 description = "Cyclone DDS 学习环境"
 authors = ["ouyangzhaoxin"]

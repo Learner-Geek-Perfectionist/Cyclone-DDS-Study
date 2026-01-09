@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "cyclone-dds-study"
 version = "0.1.0"
 description = "Cyclone DDS 学习环境"
@@ -7,6 +7,7 @@ channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
 
 
+[tasks]
 # 运行示例
 hello-pub = "build/bin/HelloworldPublisher"
 hello-sub = "build/bin/HelloworldSubscriber"

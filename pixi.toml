@@ -19,7 +19,7 @@ throughput-sub = "build/bin/ThroughputSubscriber"
 [dependencies]
 # 构建工具
 cmake = ">=3.16"
-ninja = ">=1.11"
+make = ">=4.0"
 pkg-config = ">=0.29"
 
 # 编译器

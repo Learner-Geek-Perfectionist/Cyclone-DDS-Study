@@ -15,7 +15,7 @@ Cyclone DDS 是 Eclipse 基金会下的高性能开源 DDS（Data Distribution S
 
 ```
 cyclone-dds-study/
-├── cyclonedds/               # 官方源码 (git submodule)
+├── cyclonedds/               # 官方源码
 │   ├── docs/                 # 官方文档
 │   ├── examples/             # 官方示例
 │   └── src/                  # 源码
@@ -51,17 +51,20 @@ pixi shell
 ### 2. 编译 Cyclone DDS
 
 ```bash
-# 完整编译
-./build.sh build
+# 编译（默认 Debug 模式 + 示例）
+./build.sh                # 或 pixi run build
 
-# 编译并安装
-./build.sh install
+# 编译并安装到 install/
+./build.sh install        # 或 pixi run install
 
 # 仅配置（不编译）
-./build.sh cmake
+./build.sh cmake          # 或 pixi run configure
+
+# 清理构建目录
+./build.sh clean          # 或 pixi run clean
 
 # 清理并重新编译
-./build.sh rebuild
+./build.sh rebuild        # 或 pixi run rebuild
 ```
 
 ### 3. 运行示例

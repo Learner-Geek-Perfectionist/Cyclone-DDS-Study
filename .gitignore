@@ -17,6 +17,7 @@ logs/
 *.swp
 *.swo
 *~
+.cache/
 
 # macOS
 .DS_Store

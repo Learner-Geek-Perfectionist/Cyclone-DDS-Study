@@ -1,15 +1,15 @@
 # 📊 Cyclone DDS 学习进度追踪
 
-> 最后更新：2026-01-20
+> 最后更新：2026-01-23
 
 ## 📈 总体进度
 
 | 指标 | 状态 |
 |------|------|
 | 当前阶段 | 阶段 1：基础入门 + 阶段 4：RTPS 协议深入 |
-| 完成度 | 25% |
-| 学习天数 | 1 天 |
-| 会话次数 | 1 次 |
+| 完成度 | 45% |
+| 学习天数 | 2 天 |
+| 会话次数 | 2 次 |
 
 ---
 
@@ -29,8 +29,8 @@
 | 模块 | 状态 | 完成日期 | 笔记 |
 |------|------|----------|------|
 | IDL 数据类型定义 | 🔄 | - | 理解 Key、Instance、instanceHandle 概念 |
-| QoS 策略详解 | 🔄 | - | 理解 RELIABILITY、DURABILITY、HISTORY、QoS 匹配规则 |
-| Discovery 机制 | 🔄 | - | 了解 SPDP、SEDP 作用 |
+| QoS 策略详解 | ✅ | 2026-01-23 | RELIABILITY、DURABILITY、LIVELINESS、内联 QoS |
+| Discovery 机制 | ✅ | 2026-01-23 | SPDP、SEDP 完整流程、内置端点 |
 | 自定义应用开发 | ❓ | - | 完整项目实践 |
 
 ### 阶段 3：进阶应用
@@ -49,7 +49,9 @@
 | RTPS 协议规范 | 🔄 | - | 深入学习 DDS-RTPS 规范文档 |
 | RTPS 结构模块 | ✅ | 2026-01-20 | Entity、HistoryCache、CacheChange、GUID |
 | RTPS 消息模块 | ✅ | 2026-01-20 | 所有子消息类型详解 |
-| RTPS 行为模块 | 🔄 | - | 开始学习互操作性要求 |
+| RTPS 行为模块 | ✅ | 2026-01-23 | Stateless/Stateful Writer/Reader、状态机 |
+| RTPS 发现模块 | ✅ | 2026-01-23 | SPDP、SEDP、内置端点配置 |
+| DDS QoS 实现 | ✅ | 2026-01-23 | 内联 QoS、Content Filter、Coherent Sets |
 | 核心数据结构 | ❓ | - | 内部实现 |
 | 内存管理 | ❓ | - | 资源优化 |
 
@@ -59,6 +61,7 @@
 
 <!-- 学习过程中掌握的具体技能，由 AI 自动更新 -->
 
+### RTPS 协议理论
 - [x] 理解 DDS 与 RTPS 的关系和分层
 - [x] 理解 PIM（平台无关模型）和 PSM（平台特定模型）
 - [x] 理解 RTPS 实体层次结构（Domain → Participant → Group → Endpoint）
@@ -74,6 +77,32 @@
 - [x] 理解内联 QoS（Inline QoS）的概念和用途
 - [x] 理解 QoS 匹配规则（Writer Offered >= Reader Requested）
 - [x] 理解 dispose() 和 unregister() 的区别
+
+### RTPS 行为模块（新增）
+- [x] 理解 StatelessWriter 与 StatefulWriter 的区别和状态机
+- [x] 理解 StatelessReader 与 StatefulReader 的区别和状态机
+- [x] 理解 ReaderProxy 和 WriterProxy 的作用
+- [x] 理解 ChangeForReader 和 ChangeFromWriter 状态
+- [x] 理解 nackResponseDelay、heartbeatResponseDelay 等协议参数
+- [x] 理解为什么 Reliable + Stateless = 不支持
+
+### Discovery 协议（新增）
+- [x] 理解 SPDP 和 SEDP 的分层设计
+- [x] 理解为什么 SPDP 用 Best-Effort，SEDP 用 Reliable
+- [x] 理解 SPDPdiscoveredParticipantData 结构
+- [x] 理解 leaseDuration 租约机制
+- [x] 理解 metatrafficLocator 与 defaultLocator 的区别
+- [x] 理解 availableBuiltinEndpoints 按需端点设计
+- [x] 理解 SEDP 内置端点的配置流程
+
+### 高级 DDS 特性（新增）
+- [x] 理解 Writer Liveliness Protocol（三种 Liveliness 类型）
+- [x] 理解 Content-filtered Topics 的 Writer/Reader 端过滤
+- [x] 理解 Group Ordered Access（GROUP 序列号）
+- [x] 理解 Coherent Sets（一致性集合和 ECS 消息）
+- [x] 理解协议版本控制和可扩展性机制
+
+### 实践技能（待学习）
 - [ ] 创建 Domain Participant
 - [ ] 定义 Topic
 - [ ] 创建 Publisher/Subscriber
@@ -91,9 +120,10 @@
 
 <!-- 学习中遇到的待解决问题 -->
 
-1. RTPS 行为模块的 Stateless 和 Stateful 参考实现细节
-2. Writer Liveliness Protocol 具体实现
-3. Discovery 协议（SPDP/SEDP）的详细流程
+1. PSM (Platform Specific Model) UDP/IP 映射的具体细节
+2. DDS Security 扩展如何与 RTPS 集成
+3. 实际 Cyclone DDS 源码中的实现差异
+4. 性能调优的具体参数和方法
 
 ---
 
@@ -101,7 +131,8 @@
 
 | 日期 | 会话 | 主题 | 链接 |
 |------|------|------|------|
-| 2026-01-20 | session-01 | RTPS 消息模块与行为模块 | [session-01](../sessions/2026-01-20-session-01.md) |
+| 2026-01-20 | session-01 | RTPS 消息模块与行为模块入门 | [session-01](../sessions/2026-01-20-session-01.md) |
+| 2026-01-23 | session-02 | RTPS 行为模块深入、Discovery、高级特性 | [session-02](../sessions/2026-01-23-session-02.md) |
 
 ---
 

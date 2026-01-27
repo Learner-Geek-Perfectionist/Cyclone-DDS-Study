@@ -7,9 +7,9 @@
 | 指标 | 状态 |
 |------|------|
 | 当前阶段 | 阶段 1：基础入门 + 阶段 4：RTPS 协议深入 |
-| 完成度 | 45% |
+| 完成度 | 55% |
 | 学习天数 | 2 天 |
-| 会话次数 | 2 次 |
+| 会话次数 | 3 次 |
 
 ---
 
@@ -52,6 +52,7 @@
 | RTPS 行为模块 | ✅ | 2026-01-23 | Stateless/Stateful Writer/Reader、状态机 |
 | RTPS 发现模块 | ✅ | 2026-01-23 | SPDP、SEDP、内置端点配置 |
 | DDS QoS 实现 | ✅ | 2026-01-23 | 内联 QoS、Content Filter、Coherent Sets |
+| **PSM UDP/IP 映射** | ✅ | 2026-01-23 | 类型映射、子消息线路格式、端口计算 |
 | 核心数据结构 | ❓ | - | 内部实现 |
 | 内存管理 | ❓ | - | 资源优化 |
 
@@ -102,6 +103,24 @@
 - [x] 理解 Coherent Sets（一致性集合和 ECS 消息）
 - [x] 理解协议版本控制和可扩展性机制
 
+### PSM UDP/IP 映射（新增）
+- [x] 理解 PSM 的作用（PIM 到具体平台的映射）
+- [x] 理解 UDP/IP 作为传输层的优势
+- [x] 理解 EntityId 编码：高 2 位（用户/内置/厂商）+ 低 6 位（实体类型）
+- [x] 理解预定义 EntityId 的具体值（SPDP/SEDP/ParticipantMessage）
+- [x] 理解 ANNOUNCER/DETECTOR 命名风格（= Writer/Reader）
+- [x] 理解 guidPrefix 前两字节必须是 vendorId
+- [x] 理解 Time_t、Duration_t 的 NTP 格式表示
+- [x] 理解 Locator_t 的 IPv4/IPv6 地址映射
+- [x] 理解 ParameterList 的格式和可扩展性设计
+- [x] 理解 ParameterId 空间分配（bit15 协议/厂商，bit14 忽略/必须理解）
+- [x] 理解 SequenceNumberSet 位图编码（bitmapBase/numBits:bitmap）
+- [x] 理解 Key 和 KeyHash 的关系（KeyHash 是 Key 的 16 字节摘要）
+- [x] 理解 RTPS Header 固定 20 字节格式
+- [x] 理解所有子消息的线路格式（Data、DataFrag、Heartbeat、AckNack 等）
+- [x] 理解 DataFrag 分片字段（fragmentSize、fragmentsInSubmessage、sampleSize）
+- [x] 理解 InfoDestination 允许一个消息发给多个 Participant
+
 ### 实践技能（待学习）
 - [ ] 创建 Domain Participant
 - [ ] 定义 Topic
@@ -120,10 +139,11 @@
 
 <!-- 学习中遇到的待解决问题 -->
 
-1. PSM (Platform Specific Model) UDP/IP 映射的具体细节
-2. DDS Security 扩展如何与 RTPS 集成
-3. 实际 Cyclone DDS 源码中的实现差异
-4. 性能调优的具体参数和方法
+1. ~~PSM (Platform Specific Model) UDP/IP 映射的具体细节~~ ✅ 已学习
+2. 端口号计算公式的完整细节（PB、DG、d0、d1 参数）
+3. DDS Security 扩展如何与 RTPS 集成
+4. 实际 Cyclone DDS 源码中的实现差异
+5. 性能调优的具体参数和方法
 
 ---
 
@@ -133,6 +153,7 @@
 |------|------|------|------|
 | 2026-01-20 | session-01 | RTPS 消息模块与行为模块入门 | [session-01](../sessions/2026-01-20-session-01.md) |
 | 2026-01-23 | session-02 | RTPS 行为模块深入、Discovery、高级特性 | [session-02](../sessions/2026-01-23-session-02.md) |
+| 2026-01-23 | session-03 | PSM UDP/IP 映射、子消息线路格式 | [session-03](../sessions/2026-01-23-session-03.md) |
 
 ---
 

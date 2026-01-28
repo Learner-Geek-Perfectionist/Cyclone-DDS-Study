@@ -7,9 +7,9 @@
 | 指标 | 状态 |
 |------|------|
 | 当前阶段 | 阶段 1：基础入门 + 阶段 4：RTPS 协议深入 |
-| 完成度 | **70%** |
+| 完成度 | **75%** |
 | 学习天数 | 2 天 |
-| 会话次数 | **4 次** |
+| 会话次数 | **5 次** |
 
 ---
 
@@ -46,7 +46,7 @@
 
 | 模块 | 状态 | 完成日期 | 笔记 |
 |------|------|----------|------|
-| RTPS 协议规范 | 🔄 | - | 深入学习 DDS-RTPS 规范文档 |
+| **RTPS 协议规范** | ✅ | 2026-01-23 | **全文学习完成！** 8056 行 |
 | RTPS 结构模块 | ✅ | 2026-01-20 | Entity、HistoryCache、CacheChange、GUID |
 | RTPS 消息模块 | ✅ | 2026-01-20 | 所有子消息类型详解 |
 | RTPS 行为模块 | ✅ | 2026-01-23 | Stateless/Stateful Writer/Reader、状态机 |
@@ -139,6 +139,8 @@
 - [x] 理解 SerializedPayloadHeader（RepresentationIdentifier + Options）
 - [x] 理解各种 RepresentationIdentifier（CDR_BE/LE, PL_CDR_BE/LE, CDR2 等）
 - [x] 理解 Coherent Set 和 Group Coherent Set 的内联 QoS 表示
+- [x] 通过 RepresentationIdentifier 前 2 字节区分 Discovery（PL_CDR）和用户数据（CDR）
+- [x] 理解 CDR 字符串序列化：4 字节长度 + 内容 + '\0' + 4 字节对齐填充
 
 ### 实践技能（待学习）
 - [ ] 创建 Domain Participant
@@ -174,6 +176,7 @@
 | 2026-01-23 | session-02 | RTPS 行为模块深入、Discovery、高级特性 | [session-02](../sessions/2026-01-23-session-02.md) |
 | 2026-01-23 | session-03 | PSM UDP/IP 映射、子消息线路格式 | [session-03](../sessions/2026-01-23-session-03.md) |
 | 2026-01-23 | session-04 | 端口计算、ParameterId、SerializedPayload | [session-04](../sessions/2026-01-23-session-04.md) |
+| 2026-01-23 | session-05 | 规范完结：序列化示例、CDR 字节对齐 | [session-05](../sessions/2026-01-23-session-05.md) |
 
 ---
 

@@ -7,9 +7,9 @@
 | 指标 | 状态 |
 |------|------|
 | 当前阶段 | 阶段 1：基础入门 + 阶段 4：RTPS 协议深入 |
-| 完成度 | 55% |
+| 完成度 | **70%** |
 | 学习天数 | 2 天 |
-| 会话次数 | 3 次 |
+| 会话次数 | **4 次** |
 
 ---
 
@@ -53,6 +53,7 @@
 | RTPS 发现模块 | ✅ | 2026-01-23 | SPDP、SEDP、内置端点配置 |
 | DDS QoS 实现 | ✅ | 2026-01-23 | 内联 QoS、Content Filter、Coherent Sets |
 | **PSM UDP/IP 映射** | ✅ | 2026-01-23 | 类型映射、子消息线路格式、端口计算 |
+| **SerializedPayload 表示** | ✅ | 2026-01-23 | CDR/PL_CDR/CDR2、RepresentationIdentifier |
 | 核心数据结构 | ❓ | - | 内部实现 |
 | 内存管理 | ❓ | - | 资源优化 |
 
@@ -121,6 +122,24 @@
 - [x] 理解 DataFrag 分片字段（fragmentSize、fragmentsInSubmessage、sampleSize）
 - [x] 理解 InfoDestination 允许一个消息发给多个 Participant
 
+### 端口计算与 Discovery 配置（新增）
+- [x] 理解端口计算公式：PB + DG × domainId + offset + PG × participantId
+- [x] 理解默认参数：PB=7400, DG=250, PG=2, d0=0, d1=10, d2=1, d3=11
+- [x] 理解 participantId 的作用域是同一 IP 地址（避免端口冲突）
+- [x] 理解 SPDP 默认组播地址 239.255.0.1
+- [x] 理解 SPDP 默认发送周期 30 秒
+- [x] 理解 leaseDuration 默认值 100 秒
+
+### 数据序列化与格式（新增）
+- [x] 理解 Discovery 数据为什么用 ParameterList（版本兼容、厂商扩展、选择性包含）
+- [x] 理解用户数据用 CDR（紧凑高效）vs Discovery 用 ParameterList（灵活可扩展）
+- [x] 理解完整的 ParameterId 值表（QoS、Locator、Discovery 相关）
+- [x] 理解 KeyHash 计算算法（≤16 字节直接用，>16 字节用 MD5）
+- [x] 理解 StatusInfo_t 的 D/U/F 标志（Disposed/Unregistered/Filtered）
+- [x] 理解 SerializedPayloadHeader（RepresentationIdentifier + Options）
+- [x] 理解各种 RepresentationIdentifier（CDR_BE/LE, PL_CDR_BE/LE, CDR2 等）
+- [x] 理解 Coherent Set 和 Group Coherent Set 的内联 QoS 表示
+
 ### 实践技能（待学习）
 - [ ] 创建 Domain Participant
 - [ ] 定义 Topic
@@ -140,7 +159,7 @@
 <!-- 学习中遇到的待解决问题 -->
 
 1. ~~PSM (Platform Specific Model) UDP/IP 映射的具体细节~~ ✅ 已学习
-2. 端口号计算公式的完整细节（PB、DG、d0、d1 参数）
+2. ~~端口号计算公式的完整细节（PB、DG、d0、d1 参数）~~ ✅ 已学习
 3. DDS Security 扩展如何与 RTPS 集成
 4. 实际 Cyclone DDS 源码中的实现差异
 5. 性能调优的具体参数和方法
@@ -154,6 +173,7 @@
 | 2026-01-20 | session-01 | RTPS 消息模块与行为模块入门 | [session-01](../sessions/2026-01-20-session-01.md) |
 | 2026-01-23 | session-02 | RTPS 行为模块深入、Discovery、高级特性 | [session-02](../sessions/2026-01-23-session-02.md) |
 | 2026-01-23 | session-03 | PSM UDP/IP 映射、子消息线路格式 | [session-03](../sessions/2026-01-23-session-03.md) |
+| 2026-01-23 | session-04 | 端口计算、ParameterId、SerializedPayload | [session-04](../sessions/2026-01-23-session-04.md) |
 
 ---
 

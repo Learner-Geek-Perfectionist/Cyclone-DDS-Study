@@ -199,6 +199,19 @@ do_install() {
     
     log_info "安装到 $INSTALL_DIR..."
     cmake --install "$BUILD_DIR"
+    
+    # 复制所有编译的二进制文件到 install/bin（示例、测试等）
+    log_info "复制所有二进制文件到 $INSTALL_DIR/bin/..."
+    if [ -d "$BUILD_DIR/bin" ]; then
+        mkdir -p "$INSTALL_DIR/bin"
+        for f in "$BUILD_DIR/bin"/*; do
+            if [ -f "$f" ] && [ -x "$f" ]; then
+                cp "$f" "$INSTALL_DIR/bin/"
+            fi
+        done
+        log_success "已复制 $(ls -1 "$BUILD_DIR/bin" | wc -l) 个可执行文件"
+    fi
+    
     log_success "安装完成"
     
     log_info "安装路径: $INSTALL_DIR"

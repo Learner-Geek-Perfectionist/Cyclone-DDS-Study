@@ -15,19 +15,23 @@ Cyclone DDS 是 Eclipse 基金会下的高性能开源 DDS（Data Distribution S
 
 ```
 cyclone-dds-study/
-├── cyclonedds/               # 官方源码
+├── cyclonedds/               # 官方源码（直接克隆）
 │   ├── docs/                 # 官方文档
 │   ├── examples/             # 官方示例
-│   └── src/                  # 源码
+│   ├── src/                  # 源码实现
+│   ├── build/                # 构建输出 (gitignore)
+│   ├── install/              # 安装目录 (gitignore)
+│   └── logs/                 # 构建日志 (gitignore)
+├── dds-standards/            # OMG DDS 标准规范文档
+│   ├── Data Distribution Service (DDS).txt
+│   ├── DDS-RTPS.txt
+│   └── Extensible and Dynamic Topic Types for DDS, v1.txt
 ├── progress/                 # 学习进度追踪
 │   └── tracker.md
 ├── sessions/                 # 学习会话记录
+│   ├── YYYY-MM-DD-session-XX.md
 │   └── SESSION-TEMPLATE.md
-├── notes/                    # 学习笔记
-├── examples/                 # 自己编写的示例代码
-├── build/                    # 构建输出目录 (自动生成)
-├── install/                  # 安装目录 (自动生成)
-├── logs/                     # 构建日志 (自动生成)
+├── .cursorrules              # AI 导师规则配置
 ├── pixi.toml                 # Pixi 依赖与任务管理
 ├── build.sh                  # 构建脚本
 └── README.md

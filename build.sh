@@ -8,8 +8,9 @@
 #   build    - 配置 + 编译（默认）
 #   install  - 编译 + 安装到 install/
 #   clean    - 清理构建目录
-#   rebuild  - 清理 + 重新编译
-#   help     - 显示帮助信息
+#   rebuild   - 清理 + 重新编译
+#   reinstall - 清理 + 重新编译 + 安装
+#   help      - 显示帮助信息
 #
 # 选项:
 #   --no-log - 禁用日志文件，保持终端颜色输出
@@ -71,8 +72,9 @@ show_help() {
     echo "  build    - 配置 + 编译（默认）"
     echo "  install  - 编译 + 安装到 install/"
     echo "  clean    - 清理构建目录"
-    echo "  rebuild  - 清理 + 重新编译"
-    echo "  help     - 显示此帮助信息"
+    echo "  rebuild   - 清理 + 重新编译"
+    echo "  reinstall - 清理 + 重新编译 + 安装"
+    echo "  help      - 显示此帮助信息"
     echo ""
     echo "选项:"
     echo "  --no-log - 禁用日志文件，保持终端颜色输出"
@@ -80,7 +82,7 @@ show_help() {
     echo "CMake 常用选项:"
     echo "  -DCMAKE_BUILD_TYPE=Debug|Release|RelWithDebInfo  # 默认 Debug"
     echo "  -DBUILD_EXAMPLES=ON|OFF          # 默认 ON"
-    echo "  -DBUILD_TESTING=ON|OFF           # 编译测试"
+    echo "  -DBUILD_TESTING=ON|OFF           # 默认 ON"
     echo "  -DENABLE_SECURITY=ON|OFF         # 启用 DDS Security"
     echo "  -DENABLE_SSL=ON|OFF              # 启用 SSL 支持"
     echo "  -DBUILD_IDLC=ON|OFF              # 编译 IDL 编译器"
@@ -101,7 +103,7 @@ parse_args() {
                 USE_LOG=false
                 shift
                 ;;
-            cmake|build|install|clean|rebuild|help)
+            cmake|build|install|clean|rebuild|reinstall|help)
                 COMMAND=$1
                 shift
                 ;;
@@ -145,6 +147,7 @@ do_cmake() {
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -DCMAKE_BUILD_TYPE=Debug \
         -DBUILD_EXAMPLES=ON \
+        -DBUILD_TESTING=ON \
         $CMAKE_ARGS"
     
     log_info "CMake 命令: $cmake_cmd"
@@ -219,6 +222,12 @@ do_rebuild() {
     do_build
 }
 
+# 重新安装（清理 + 编译 + 安装）
+do_reinstall() {
+    do_clean
+    do_install
+}
+
 # 主函数
 main() {
     parse_args "$@"
@@ -241,6 +250,9 @@ main() {
             ;;
         rebuild)
             do_rebuild
+            ;;
+        reinstall)
+            do_reinstall
             ;;
         *)
             log_error "未知命令: $COMMAND"

@@ -2,8 +2,6 @@
 build/
 install/
 
-# 官方源码（独立克隆，不追踪）
-cyclonedds/
 
 # 日志
 logs/

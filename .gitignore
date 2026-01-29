@@ -1,10 +1,7 @@
-# 构建目录
-build/
-install/
-
-
-# 日志
-logs/
+# 构建目录（位于 cyclonedds/ 下）
+cyclonedds/build/
+cyclonedds/install/
+cyclonedds/logs/
 
 # 编译数据库（保留根目录的供 IDE 使用）
 # compile_commands.json

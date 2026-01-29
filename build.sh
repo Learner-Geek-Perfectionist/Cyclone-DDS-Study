@@ -27,9 +27,9 @@ set -e
 # 项目目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="$SCRIPT_DIR/cyclonedds"
-BUILD_DIR="$SCRIPT_DIR/build"
-INSTALL_DIR="$SCRIPT_DIR/install"
-LOG_DIR="$SCRIPT_DIR/logs"
+BUILD_DIR="$SOURCE_DIR/build"
+INSTALL_DIR="$SOURCE_DIR/install"
+LOG_DIR="$SOURCE_DIR/logs"
 
 # 默认选项
 USE_LOG=true
@@ -141,6 +141,7 @@ do_cmake() {
     
     local cmake_cmd="cmake -B $BUILD_DIR -S $SOURCE_DIR \
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+        -DCMAKE_INSTALL_LIBDIR=lib \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -DCMAKE_BUILD_TYPE=Debug \
         -DBUILD_EXAMPLES=ON \

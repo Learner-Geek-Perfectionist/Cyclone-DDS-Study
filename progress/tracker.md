@@ -1,15 +1,15 @@
 # 📊 Cyclone DDS 学习进度追踪
 
-> 最后更新：2026-01-23
+> 最后更新：2026-01-29
 
 ## 📈 总体进度
 
 | 指标 | 状态 |
 |------|------|
 | 当前阶段 | 阶段 1：基础入门 + 阶段 4：RTPS 协议深入 |
-| 完成度 | **75%** |
-| 学习天数 | 2 天 |
-| 会话次数 | **5 次** |
+| 完成度 | **78%** |
+| 学习天数 | 3 天 |
+| 会话次数 | **6 次** |
 
 ---
 
@@ -19,8 +19,8 @@
 
 | 模块 | 状态 | 完成日期 | 笔记 |
 |------|------|----------|------|
-| DDS 概念与架构 | ✅ | 2026-01-20 | 理解 DDS/RTPS 分层、PIM/PSM 模型 |
-| 环境安装配置 | ❓ | - | 编译 Cyclone DDS |
+| DDS 概念与架构 | ✅ | 2026-01-20 | 理解 DDS/RTPS 分层、PIM/PSM 模型、共享数据空间设计哲学 |
+| 环境安装配置 | 🔄 | - | 编译配置完成，理解 CMake 包配置机制 |
 | HelloWorld 示例 | ❓ | - | 第一个 DDS 程序 |
 | 基本 API 使用 | ❓ | - | 创建实体、发布订阅 |
 
@@ -142,6 +142,17 @@
 - [x] 通过 RepresentationIdentifier 前 2 字节区分 Discovery（PL_CDR）和用户数据（CDR）
 - [x] 理解 CDR 字符串序列化：4 字节长度 + 内容 + '\0' + 4 字节对齐填充
 
+### 项目构建与配置（新增）
+- [x] 理解 DDS "共享数据空间" 设计哲学
+- [x] 理解 WHC/RHC 分布式缓存实现共享数据空间
+- [x] 理解 CMake `configure_package_config_file()` 函数
+- [x] 理解 `@PACKAGE_INIT@` 占位符展开
+- [x] 理解 `CMAKE_PREFIX_PATH` 与 `find_package()` 搜索机制
+- [x] 理解 `CMAKE_CURRENT_LIST_DIR` 变量
+- [x] 理解 `PackageConfig.cmake.in` 与 `CycloneDDSConfig.cmake` 的关系
+- [x] 理解 `CYCLONEDDS_URI` 环境变量与运行时配置
+- [x] 区分 `package.xml`（ROS 2 元数据）与 DDS 配置文件
+
 ### 实践技能（待学习）
 - [ ] 创建 Domain Participant
 - [ ] 定义 Topic
@@ -177,6 +188,7 @@
 | 2026-01-23 | session-03 | PSM UDP/IP 映射、子消息线路格式 | [session-03](../sessions/2026-01-23-session-03.md) |
 | 2026-01-23 | session-04 | 端口计算、ParameterId、SerializedPayload | [session-04](../sessions/2026-01-23-session-04.md) |
 | 2026-01-23 | session-05 | 规范完结：序列化示例、CDR 字节对齐 | [session-05](../sessions/2026-01-23-session-05.md) |
+| 2026-01-29 | session-06 | 项目结构、CMake 包配置、共享数据空间 | [session-06](../sessions/2026-01-29-session-06.md) |
 
 ---
 

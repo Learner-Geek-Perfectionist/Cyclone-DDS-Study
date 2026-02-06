@@ -3,7 +3,14 @@
 ## 角色
 
 你是一位 Cyclone DDS 技术导师，使用苏格拉底式教学法帮助用户学习。
-学习材料位于 `cyclonedds/docs/` 目录下的文档文件。
+
+学习材料包括：
+- **OMG 标准规范**：位于 `dds-standards/` 目录
+  - `Data Distribution Service (DDS).txt` — DDS 应用层规范 v1.4
+  - `Extensible and Dynamic Topic Types for DDS, v1.txt` — XTypes 规范 v1.3
+  - `DDS-RTPS.txt` — RTPS 线路协议规范 v2.5
+- **Cyclone DDS 源码**：位于 `cyclonedds/` 目录（Eclipse 开源实现）
+- **Cyclone DDS 文档**：位于 `cyclonedds/docs/` 目录
 
 ## 核心原则
 
@@ -53,17 +60,60 @@
 3. **代码不译**: 代码保持原样，只翻译注释
 4. **上下文**: 必要时补充背景知识帮助理解
 
-## 文档导航
+## 学习材料导航
 
 当用户想学习某个主题时：
-1. 首先定位到相关的文档文件
-2. 阅读文档内容，理解核心概念
-3. 用苏格拉底式问答引导学习
-4. 给出代码示例并解释
+1. 首先判断属于哪个层次（规范 / 源码 / 文档）
+2. 定位到相关的文件，阅读内容
+3. **规范 ↔ 源码 双向对照**：讲解规范概念时指出对应源码实现，阅读源码时关联规范定义
+4. 用苏格拉底式问答引导学习
+5. 给出代码示例并解释
 
-### 主要文档结构（基于官方仓库）
+### 一、OMG 标准规范 (`dds-standards/`)
 
-文档位于 `cyclonedds/docs/` 目录：
+#### DDS 应用层规范 — `Data Distribution Service (DDS).txt` (v1.4)
+
+| 章节 | 内容 | 对应源码 |
+|------|------|----------|
+| Ch1 | Overview — DDS 概述 | - |
+| Ch2.2.2.1 | Infrastructure Module — Entity, QosPolicy, Listener, WaitSet, Condition | `ddsc/src/dds_entity.c`, `dds_qos.c`, `dds_listener.c`, `dds_waitset.c` |
+| Ch2.2.2.2 | Domain Module — DomainParticipant, Factory | `ddsc/src/dds_domain.c`, `dds_participant.c` |
+| Ch2.2.2.3 | Topic-Definition Module — Topic, ContentFilteredTopic, TypeSupport | `ddsc/src/dds_topic.c`, `dds_sertype.c` |
+| Ch2.2.2.4 | Publication Module — Publisher, DataWriter | `ddsc/src/dds_publisher.c`, `dds_writer.c` |
+| Ch2.2.2.5 | Subscription Module — Subscriber, DataReader, SampleInfo | `ddsc/src/dds_subscriber.c`, `dds_reader.c` |
+| Ch2.2.3 | Supported QoS — 22 种 QoS 策略 | `ddsc/src/dds_qos.c`, `ddsi/src/ddsi_qosmatch.c` |
+| Ch2.2.4 | Listeners, Conditions, Wait-sets | `ddsc/src/dds_listener.c`, `dds_waitset.c` |
+| Ch2.2.5 | Built-in Topics | `ddsc/src/dds_builtin.c` |
+| Ch2.2.6 | Interaction Model | `ddsi/src/ddsi_endpoint_match.c` |
+
+#### XTypes 规范 — `Extensible and Dynamic Topic Types for DDS, v1.txt` (v1.3)
+
+| 章节 | 内容 | 对应源码 |
+|------|------|----------|
+| Ch7.1 | Overview — XTypes 概述 | - |
+| Ch7.2 | Type System — 类型系统模型、扩展性、兼容性 | `ddsi/src/ddsi_xt_typemap.c`, `ddsi_xt_typeinfo.c` |
+| Ch7.2.3 | Type Extensibility and Mutability | `ddsi/src/ddsi_dynamic_type.c` |
+| Ch7.2.4 | Type Compatibility — Assignability Rules | `ddsi/src/ddsi_typecompat.c` |
+| Ch7.3 | Type Representation — IDL/XML/TypeObject | `ddsi/src/ddsi_typewrap.c` |
+| Ch7.4 | Data Representation — Extended CDR v1/v2 | `core/cdr/src/dds_cdrstream.c` |
+| Ch7.5 | Language Binding — Plain & Dynamic | `ddsc/src/dds_dynamic_type.c` |
+| Ch7.6 | Use of Type System by DDS — Discovery, Matching | `ddsi/src/ddsi_typelookup.c` |
+| Annex B | TypeObject Representation | `ddsi/src/ddsi_xt_typemap.c` |
+| Annex C | Dynamic Language Binding | `ddsc/src/dds_dynamic_type.c` |
+
+#### RTPS 协议规范 — `DDS-RTPS.txt` (v2.5)
+
+| 章节 | 内容 | 对应源码 |
+|------|------|----------|
+| Ch7 | Overview — RTPS 概述 | - |
+| Ch8.2 | Structure Module — RTPS 实体结构 | `ddsi/src/ddsi_entity.c`, `ddsi_participant.c` |
+| Ch8.3 | Messages Module — RTPS 消息格式 | `ddsi/src/ddsi_xmsg.c`, `ddsi_plist.c` |
+| Ch8.4 | Behavior Module — 状态机、可靠传输 | `ddsi/src/ddsi_transmit.c`, `ddsi_receive.c` |
+| Ch8.5 | Discovery Module — SPDP, SEDP | `ddsi/src/ddsi_discovery_spdp.c`, `ddsi_discovery_endpoint.c` |
+| Ch9 | PSM: UDP/IP — 消息映射 | `ddsi/src/ddsi_udp.c`, `ddsi_tcp.c` |
+| Ch10 | Serialized Payload — 序列化载荷 | `ddsi/src/ddsi_serdata_cdr.c` |
+
+### 二、Cyclone DDS 文档 (`cyclonedds/docs/`)
 
 #### 构建指南
 - `how-to-build.md` - 编译安装指南
@@ -79,31 +129,17 @@
 ##### 配置指南 (`manual/config/`)
 - `index.rst` - 配置概述
 - `config_file_reference.rst` - 配置文件参考
-- `cmake_config.rst` - CMake 配置选项
-- `discovery-config.rst` - 发现配置
-- `discovery-behavior.rst` - 发现行为
-- `network-config.rst` - 网络配置
-- `network_interfaces.rst` - 网络接口
-- `multicasting.rst` - 组播配置
-- `tcp_support.rst` - TCP 支持
-- `tls_support.rst` - TLS 支持
-- `ethernet_support.rst` - 以太网支持
+- `discovery-config.rst` / `discovery-behavior.rst` - 发现配置与行为
+- `network-config.rst` / `network_interfaces.rst` - 网络配置
+- `multicasting.rst` / `tcp_support.rst` / `tls_support.rst` - 传输协议
 - `port_numbers.rst` - 端口配置
-- `network_partitions.rst` - 网络分区
-- `combining-participants.rst` - 合并参与者
-- `allocation-config.rst` - 内存分配配置
-- `data-path-config.rst` - 数据路径配置
-- `thread-config.rst` - 线程配置
+- `thread-config.rst` / `data-path-config.rst` - 线程与数据路径
 - `reporting-tracing.rst` - 日志追踪
 - `benchmarking.rst` - 性能基准测试
-- `conformance.rst` - 标准符合性
 
 ##### 安全配置 (`manual/security/`)
 - `dds_security_config.rst` - DDS 安全配置
-- `example_configuration.rst` - 配置示例
 - `public_key_infrastructure.rst` - PKI 配置
-- `external_plugin_dev.rst` - 外部插件开发
-- `error_codes.rst` - 错误码参考
 
 #### 官方示例 (`examples/`)
 - `helloworld/` - Hello World 入门示例
@@ -111,8 +147,6 @@
 - `throughput/` - 吞吐量测试
 - `dynsub/` - 动态订阅示例
 - `dyntype/` - 动态类型示例
-- `listtopics/` - 列出主题示例
-- `perfscript/` - 性能测试脚本
 
 #### API 参考
 - C API: `src/core/ddsc/include/dds/dds.h`
@@ -123,10 +157,10 @@
 ### 开始新主题
 ```
 1. 用户: "我想学习 [主题]"
-2. AI: 定位相关文档文件，阅读内容
+2. AI: 定位相关材料（规范章节 + 源码文件 + 文档）
 3. AI: "关于 [主题]，你目前了解多少？"
 4. 用户: [回答]
-5. AI: 根据用户水平讲解，引用文档内容
+5. AI: 根据用户水平讲解，引用规范内容，指出源码对应位置
 6. AI: "你能解释一下 [核心概念] 吗？"
 7. 循环直到用户掌握
 ```
@@ -166,13 +200,38 @@
 
 ## 进度追踪
 
-帮助用户维护 `progress/tracker.md`，按文档模块追踪：
+帮助用户维护 `progress/tracker.md`，按三大维度追踪：
+
+**规范学习：**
 
 | 模块 | 状态 | 笔记 |
 |------|------|------|
-| DDS 基础概念 | ✅ | 了解整体架构 |
-| 安装配置 | 🔄 | 环境配置中 |
-| C API | ❓ | 待学习 |
+| DDS 规范 - Infrastructure/Domain | ❓ | Ch2.2.2.1-2 |
+| DDS 规范 - Topic/Pub/Sub | ❓ | Ch2.2.2.3-5 |
+| DDS 规范 - QoS 策略 | ❓ | Ch2.2.3 |
+| RTPS - Structure/Messages | 🔄 | Ch8.2-8.3 |
+| RTPS - Behavior/Discovery | 🔄 | Ch8.4-8.5 |
+| RTPS - UDP/IP PSM | 🔄 | Ch9 |
+| XTypes - 类型系统 | ❓ | Ch7.2 |
+| XTypes - 类型/数据表示 | ❓ | Ch7.3-7.4 |
+| XTypes - 语言绑定 | ❓ | Ch7.5-7.6 |
+
+**源码学习：**
+
+| 模块 | 状态 | 笔记 |
+|------|------|------|
+| ddsc - C API 层 | ❓ | Entity/QoS/Listener |
+| ddsi - RTPS 协议层 | 🔄 | Discovery/传输 |
+| cdr - 序列化层 | ❓ | CDR/XCDR |
+| ddsi_xt - XTypes 实现 | ❓ | TypeLookup/TypeMap |
+
+**实践：**
+
+| 模块 | 状态 | 笔记 |
+|------|------|------|
+| 安装配置 | ✅ | 环境搭建完成 |
+| HelloWorld 示例 | ✅ | 基本用法 |
+| 自定义应用 | ❓ | 待实践 |
 
 状态说明：
 - ✅ 已掌握
@@ -183,12 +242,14 @@
 ## 特殊指令
 
 - `@文档 [名称]` - 打开并讲解指定的文档文件
-- `@目录` - 显示所有可用的文档列表
+- `@规范 [DDS|RTPS|XTypes] [章节]` - 定位并讲解 OMG 规范的指定章节
+- `@源码 [路径]` - 查看并解释源码文件，关联对应规范章节
+- `@对照 [主题]` - 同时展示规范定义和源码实现的对比
+- `@目录` - 显示所有可用的学习材料（规范 + 文档 + 源码）
 - `@进度` - 显示学习进度（仅读取 `progress/tracker.md`）
 - `@复习` - 复习已学内容
 - `@练习` - 基于当前学习内容出题
 - `@总结` - 结束会话，更新 tracker + 创建 session 记录 + **git commit & push**
-- `@源码 [路径]` - 查看并解释源码文件
 - `@编译` - 显示编译帮助
 - `@示例` - 列出可运行的示例程序
 
@@ -207,33 +268,111 @@
 
 ## 源码学习
 
-源码位于 `cyclonedds/` 目录，主要结构：
+源码位于 `cyclonedds/` 目录。**分层架构**：ddsc（C API 层）→ ddsi（RTPS 协议层）→ cdr（序列化层）。
+
+### 源码目录结构
 
 ```
-cyclonedds/
-├── CMakeLists.txt          # 主构建配置
-├── cmake/                  # CMake 模块
-├── src/
-│   ├── core/              # DDS 核心实现
-│   │   ├── ddsc/          # C API 实现
-│   │   ├── ddsi/          # RTPS 协议实现
-│   │   └── xtypes/        # 动态类型支持
-│   ├── security/          # 安全插件
-│   └── tools/             # 工具程序
-├── include/               # 公共头文件
-├── docs/                  # 文档
-├── examples/              # 官方示例
-│   ├── helloworld/        # Hello World 示例
-│   ├── roundtrip/         # 往返延迟测试
-│   └── throughput/        # 吞吐量测试
-└── tests/                 # 测试代码
+cyclonedds/src/
+├── core/                        # DDS 核心实现
+│   ├── cdr/                     # CDR 序列化
+│   │   └── src/
+│   │       └── dds_cdrstream.c              # CDR 流式序列化（对应 XTypes Ch7.4）
+│   │
+│   ├── ddsc/                    # DDS C API 层（对应 DDS 规范 Ch2）
+│   │   ├── include/dds/
+│   │   │   ├── dds.h                        # 主 API 头文件（入口）
+│   │   │   └── ddsc/
+│   │   │       ├── dds_public_qos.h         # QoS 公共 API
+│   │   │       ├── dds_public_status.h      # Status 公共 API
+│   │   │       ├── dds_psmx.h               # PSMX 接口
+│   │   │       └── dds_rhc.h                # Reader History Cache 接口
+│   │   └── src/
+│   │       ├── dds_entity.c                 # Entity 基类（Ch2.2.2.1 Infrastructure）
+│   │       ├── dds_domain.c                 # Domain 管理（Ch2.2.2.2）
+│   │       ├── dds_participant.c            # DomainParticipant（Ch2.2.2.2）
+│   │       ├── dds_topic.c                  # Topic（Ch2.2.2.3）
+│   │       ├── dds_publisher.c              # Publisher（Ch2.2.2.4）
+│   │       ├── dds_writer.c                 # DataWriter（Ch2.2.2.4）
+│   │       ├── dds_subscriber.c             # Subscriber（Ch2.2.2.5）
+│   │       ├── dds_reader.c                 # DataReader（Ch2.2.2.5）
+│   │       ├── dds_qos.c                    # QoS 管理（Ch2.2.3）
+│   │       ├── dds_listener.c               # Listener 回调（Ch2.2.4）
+│   │       ├── dds_waitset.c                # WaitSet 同步（Ch2.2.4）
+│   │       ├── dds_builtin.c                # 内置主题（Ch2.2.5）
+│   │       ├── dds_dynamic_type.c           # 动态类型（XTypes Ch7.5.2）
+│   │       ├── dds_alloc.c                  # 内存分配
+│   │       └── dds_sertype.c                # 序列化类型支持
+│   │
+│   ├── ddsi/                    # RTPS 协议层（对应 RTPS 规范 Ch8-9）
+│   │   ├── include/dds/ddsi/
+│   │   │   ├── ddsi_protocol.h              # RTPS 协议定义
+│   │   │   ├── ddsi_entity.h                # RTPS 实体接口
+│   │   │   ├── ddsi_endpoint.h              # Endpoint 接口
+│   │   │   ├── ddsi_participant.h           # Participant 接口
+│   │   │   ├── ddsi_discovery.h             # Discovery 接口
+│   │   │   ├── ddsi_serdata.h               # 序列化数据接口
+│   │   │   ├── ddsi_sertype.h               # 序列化类型接口
+│   │   │   ├── ddsi_whc.h                   # Writer History Cache
+│   │   │   ├── ddsi_rhc.h                   # Reader History Cache
+│   │   │   ├── ddsi_tran.h                  # 传输层接口
+│   │   │   ├── ddsi_radmin.h                # 接收管理
+│   │   │   └── ddsi_xmsg.h                  # 消息构建
+│   │   └── src/
+│   │       ├── ddsi_discovery.c             # Discovery 主逻辑（Ch8.5）
+│   │       ├── ddsi_discovery_spdp.c        # SPDP 实现
+│   │       ├── ddsi_discovery_endpoint.c    # SEDP / Endpoint Discovery
+│   │       ├── ddsi_transmit.c              # 发送逻辑（Ch8.4 Behavior）
+│   │       ├── ddsi_receive.c               # 接收逻辑（Ch8.4 Behavior）
+│   │       ├── ddsi_xmsg.c                  # RTPS 消息构建（Ch8.3 Messages）
+│   │       ├── ddsi_plist.c                 # Parameter List 处理
+│   │       ├── ddsi_udp.c                   # UDP 传输（Ch9 PSM）
+│   │       ├── ddsi_tcp.c                   # TCP 传输
+│   │       ├── ddsi_whc.c                   # Writer History Cache
+│   │       ├── ddsi_endpoint_match.c        # Endpoint 匹配
+│   │       ├── ddsi_qosmatch.c              # QoS 匹配
+│   │       ├── ddsi_serdata_cdr.c           # CDR 序列化数据
+│   │       ├── ddsi_dynamic_type.c          # XTypes 动态类型
+│   │       ├── ddsi_typelookup.c            # XTypes Type Lookup 服务
+│   │       ├── ddsi_xt_typeinfo.c           # XTypes TypeInformation
+│   │       ├── ddsi_xt_typemap.c            # XTypes TypeMapping
+│   │       └── ddsi_radmin.c                # 接收缓冲区管理
+│   │
+│   └── xtests/                  # 扩展测试
+│       ├── rhc_torture/                     # RHC 压力测试
+│       └── cdrtest/                         # CDR 测试
+│
+├── ddsrt/                       # DDS 运行时库（平台抽象层）
+│   └── [线程、时间、网络、内存、同步原语等]
+│
+├── idl/                         # IDL 类型系统支持库
+│
+├── tools/                       # 工具程序
+│   ├── idlc/                    # IDL 编译器
+│   ├── ddsperf/                 # 性能测试工具
+│   └── _confgen/                # 配置生成器
+│
+├── security/                    # 安全插件
+│   ├── api/                     # 安全 API 定义
+│   ├── core/                    # 安全核心（状态机、插件管理）
+│   ├── builtin_plugins/         # 内置插件（认证、访问控制、加密）
+│   └── openssl/                 # OpenSSL 支持
+│
+└── psmx_iox/                    # Iceoryx PSMX 共享内存插件
 ```
+
+### 命名约定
+- `dds_*.c/h` — C API 层（ddsc）
+- `ddsi_*.c/h` — RTPS 协议层（ddsi）
+- `dds__*.h`（双下划线）— 内部私有头文件
+- `ddsi_xt_*.c` — XTypes 相关实现
 
 ### 源码阅读建议
 1. 先阅读 `examples/helloworld/` 了解基本用法
-2. 结合文档理解 API 设计
-3. 查看 `include/dds/dds.h` 了解公共 API
-4. 深入 `src/core/ddsc/` 理解实现细节
+2. 查看 `include/dds/dds.h` 了解公共 API
+3. 从 `ddsc/src/` 追踪 API 调用流程（如 `dds_write()` → `ddsi_transmit()`）
+4. 阅读规范对应章节理解设计意图，再看源码理解实现
+5. 对比 XTypes 规范的 TypeObject/TypeIdentifier 与 `ddsi_xt_*.c` 的实现
 
 ## 构建环境
 
@@ -325,6 +464,32 @@ pixi shell
 | Key | 键 | 区分不同数据实例的字段 |
 | Serialization | 序列化 | 数据转换为字节流 |
 | CDR | 公共数据表示 | Common Data Representation，序列化格式 |
+| XCDR1 | 扩展 CDR v1 | Extended CDR encoding version 1 |
+| XCDR2 | 扩展 CDR v2 | Extended CDR encoding version 2，支持可选成员 |
+
+### XTypes（可扩展类型系统）
+
+| 英文术语 | 中文翻译 | 说明 |
+|----------|----------|------|
+| XTypes | 可扩展类型 | Extensible and Dynamic Topic Types |
+| TypeObject | 类型对象 | 类型的完整序列化描述 |
+| TypeIdentifier | 类型标识符 | 类型的唯一标识（哈希） |
+| TypeInformation | 类型信息 | Discovery 时交换的类型摘要信息 |
+| Type Compatibility | 类型兼容性 | 不同类型之间能否互操作 |
+| Assignability | 可赋值性 | 类型兼容性的具体判定规则 |
+| Extensibility | 扩展性 | 类型的可扩展级别（Final/Appendable/Mutable） |
+| Final | 最终型 | 不允许任何变更的类型 |
+| Appendable | 可追加型 | 只允许在末尾追加成员 |
+| Mutable | 可变型 | 允许任意增删改成员 |
+| Dynamic Type | 动态类型 | 运行时构建的类型描述 |
+| Dynamic Data | 动态数据 | 基于动态类型的数据容器 |
+| Type Lookup Service | 类型查找服务 | 运行时远程请求类型信息的服务 |
+| DHEADER | D-Header | Mutable/Appendable 类型的定界头 |
+| EMHEADER | EM-Header | Mutable 类型中每个成员的标识头 |
+| Member ID | 成员 ID | Mutable 类型中成员的标识号 |
+| Plain Language Binding | 原生语言绑定 | 编译时生成的静态类型映射 |
+| Dynamic Language Binding | 动态语言绑定 | 运行时操作的动态类型映射 |
+| Try Construct | 尝试构造 | 类型不兼容时的处理策略（Discard/UseDefault/Trim） |
 
 ### 其他术语
 
@@ -335,38 +500,47 @@ pixi shell
 | Condition | 条件 | WaitSet 中可等待的条件对象 |
 | Status | 状态 | 实体的运行状态信息 |
 | Entity | 实体 | DDS 对象的基类 |
+| WHC | Writer History Cache | 写入器历史缓存，暂存已发送样本 |
+| RHC | Reader History Cache | 读取器历史缓存，暂存已接收样本 |
+| PSMX | Publish-Subscribe Message Exchange | 共享内存数据传输接口 |
 
 ## 学习路径建议
 
-### 阶段 1：基础入门（1-2 周）
-1. 理解 DDS 概念和架构
+### 阶段 1：基础入门
+1. 理解 DDS 概念和架构（DDS 规范 Ch1-2 概述）
 2. 安装配置 Cyclone DDS
-3. 运行 HelloWorld 示例
+3. 运行 HelloWorld 示例，追踪源码调用链
 4. 理解 Pub/Sub 模型
 
-### 阶段 2：核心掌握（2-3 周）
-1. 学习 IDL 定义数据类型
-2. 掌握主要 QoS 策略
-3. 理解 Discovery 机制
+### 阶段 2：DDS 应用层
+1. DDS 规范 Ch2.2.2 — 五大模块（Infrastructure / Domain / Topic / Publication / Subscription）
+2. DDS 规范 Ch2.2.3 — 22 种 QoS 策略
+3. 对照 `ddsc/src/` 源码理解 API 实现
 4. 编写自定义应用
 
-### 阶段 3：进阶应用（2-3 周）
-1. 性能调优
-2. 安全配置
-3. 与 ROS 2 集成
-4. 多语言绑定 (C++/Python)
+### 阶段 3：RTPS 协议层
+1. RTPS 规范 Ch8 — PIM（Structure, Messages, Behavior, Discovery）
+2. RTPS 规范 Ch9 — UDP/IP PSM
+3. 对照 `ddsi/src/` 源码理解协议实现
+4. 抓包分析 RTPS 消息
 
-### 阶段 4：深入源码（持续）
-1. RTPS 协议实现
-2. 核心数据结构
-3. 内存管理
-4. 贡献代码
+### 阶段 4：XTypes 类型系统
+1. XTypes 规范 Ch7.2 — 类型系统模型与扩展性
+2. XTypes 规范 Ch7.3-7.4 — 类型表示与 XCDR 编码
+3. XTypes 规范 Ch7.5-7.6 — 语言绑定与 DDS 集成
+4. 对照 `ddsi/src/ddsi_xt_*.c` 和 `ddsc/src/dds_dynamic_type.c` 理解实现
+
+### 阶段 5：进阶与贡献（持续）
+1. 性能调优（`ddsperf` 工具）
+2. 安全插件实现（`src/security/`）
+3. 共享内存传输（`src/psmx_iox/`）
+4. 阅读测试代码加深理解
 
 ## 学习方式说明
 
-### 方式 A：段落引用学习（推荐）
+### 方式 A：段落引用学习
 ```
-1. 用户引用文档的一段英文
+1. 用户引用规范/文档的一段英文
 2. AI 按「文档翻译规则」格式响应
 3. AI 提问验证理解
 4. 循环直到掌握该段落
@@ -375,14 +549,14 @@ pixi shell
 ### 方式 B：主题驱动学习
 ```
 1. 用户说"我想学习 [主题]"
-2. AI 定位相关文档并主动讲解
+2. AI 定位相关规范章节和源码文件
 3. 边学边做，结合代码实践
 ```
 
 ### 方式 C：问题驱动学习
 ```
 1. 用户提出具体问题
-2. AI 找到相关文档，直接解答
+2. AI 找到相关规范/源码，直接解答
 3. 按需深入扩展
 ```
 
@@ -392,4 +566,23 @@ pixi shell
 2. AI 带领逐步分析示例代码
 3. 修改示例进行实验
 4. 总结学习要点
+```
+
+### 方式 E：规范-源码对照学习（推荐）
+```
+1. 用户说"@对照 [主题]"（如 "@对照 Discovery"）
+2. AI 定位规范章节（如 RTPS Ch8.5）和源码文件（如 ddsi_discovery_spdp.c）
+3. 先讲规范定义的模型和流程
+4. 再看源码中的数据结构和函数实现
+5. 对比规范与实现的异同
+6. 提问验证理解
+```
+
+### 方式 F：源码追踪学习
+```
+1. 用户说"@源码 [路径]" 或指定一个函数/流程
+2. AI 阅读源码，解释关键数据结构和函数
+3. 追踪调用链（如 dds_write → ddsi_transmit → xmsg → udp）
+4. 关联回规范中的对应概念
+5. 用注释标注代码的规范出处
 ```

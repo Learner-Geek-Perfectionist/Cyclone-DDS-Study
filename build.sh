@@ -156,7 +156,7 @@ do_cmake() {
         mkdir -p "$LOG_DIR"
         local log_file="$LOG_DIR/cmake-$(date +%Y%m%d-%H%M%S).log"
         log_info "日志文件: $log_file"
-        eval $cmake_cmd 2>&1 | tee "$log_file"
+        CLICOLOR_FORCE=1 CMAKE_COLOR_DIAGNOSTICS=ON eval $cmake_cmd 2>&1 | tee "$log_file"
     else
         eval $cmake_cmd
     fi
@@ -185,7 +185,7 @@ do_build() {
         mkdir -p "$LOG_DIR"
         local log_file="$LOG_DIR/build-$(date +%Y%m%d-%H%M%S).log"
         log_info "日志文件: $log_file"
-        eval $build_cmd 2>&1 | tee "$log_file"
+        CLICOLOR_FORCE=1 CMAKE_COLOR_DIAGNOSTICS=ON eval $build_cmd 2>&1 | tee "$log_file"
     else
         eval $build_cmd
     fi

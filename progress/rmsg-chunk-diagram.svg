@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520" font-family="Consolas, monospace" font-size="13">
+  <defs>
+    <marker id="ab" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64b5f6"/>
+    </marker>
+    <marker id="ao" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffb74d"/>
+    </marker>
+  </defs>
+
+  <rect width="820" height="520" fill="#1e1e1e" rx="8"/>
+
+  <text x="410" y="30" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="bold">rmsg chunk linked list across rbufs</text>
+
+  <!-- rbuf A -->
+  <rect x="30" y="50" width="480" height="270" fill="#2d2d2d" stroke="#555" stroke-width="1.5" rx="6"/>
+  <text x="45" y="72" fill="#8bc34a" font-size="14" font-weight="bold">rbuf A</text>
+  <text x="130" y="72" fill="#777" font-size="11">(was rbp-&gt;current, now detached)</text>
+
+  <!-- rmsg header -->
+  <rect x="50" y="85" width="440" height="40" fill="#37474f" stroke="#64b5f6" stroke-width="1.5" rx="4"/>
+  <text x="60" y="110" fill="#64b5f6" font-weight="bold">rmsg</text>
+  <text x="120" y="110" fill="#bbb">refcount</text>
+  <text x="250" y="110" fill="#bbb">lastchunk -------&gt;</text>
+
+  <!-- chunk[0] header -->
+  <rect x="50" y="135" width="440" height="35" fill="#1b3a2a" stroke="#66bb6a" stroke-width="1.5" rx="4"/>
+  <text x="60" y="158" fill="#66bb6a" font-weight="bold">chunk[0]</text>
+  <text x="155" y="158" fill="#aaa">rbuf=A</text>
+  <text x="235" y="158" fill="#ef9a9a">size=FULL</text>
+  <text x="340" y="158" fill="#aaa">next -------&gt;</text>
+
+  <!-- chunk[0] payload -->
+  <rect x="50" y="175" width="440" height="130" fill="#263238" stroke="#546e7a" stroke-width="1" rx="4"/>
+  <text x="70" y="198" fill="#ce93d8">UDP raw packet data</text>
+  <text x="70" y="220" fill="#fff59d">receiver_state</text>
+  <text x="70" y="242" fill="#fff59d">sampleinfo #1</text>
+  <text x="70" y="268" fill="#ef9a9a">... FULL, no more space ...</text>
+
+  <!-- rdata.zoff annotation -->
+  <line x1="370" y1="192" x2="370" y2="255" stroke="#ff8a65" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="380" y="210" fill="#ff8a65" font-size="12">rdata.zoff</text>
+  <text x="380" y="228" fill="#ff8a65" font-size="11">points here</text>
+  <text x="380" y="246" fill="#ff8a65" font-size="11" font-weight="bold">(addr unchanged!)</text>
+
+  <!-- rbuf B -->
+  <rect x="310" y="340" width="480" height="165" fill="#2d2d2d" stroke="#555" stroke-width="1.5" rx="6"/>
+  <text x="325" y="362" fill="#8bc34a" font-size="14" font-weight="bold">rbuf B</text>
+  <text x="410" y="362" fill="#777" font-size="11">(rbp-&gt;current now)</text>
+
+  <!-- chunk[1] header -->
+  <rect x="330" y="375" width="440" height="35" fill="#1b3a2a" stroke="#66bb6a" stroke-width="1.5" rx="4"/>
+  <text x="340" y="398" fill="#66bb6a" font-weight="bold">chunk[1]</text>
+  <text x="435" y="398" fill="#aaa">rbuf=B</text>
+  <text x="520" y="398" fill="#aaa">size=..</text>
+  <text x="600" y="398" fill="#aaa">next=NULL</text>
+
+  <!-- chunk[1] payload -->
+  <rect x="330" y="415" width="440" height="80" fill="#263238" stroke="#546e7a" stroke-width="1" rx="4"/>
+  <text x="350" y="438" fill="#fff59d">sampleinfo #2</text>
+  <text x="350" y="460" fill="#fff59d">sampleinfo #3</text>
+  <text x="350" y="482" fill="#81c784">... more space available ...</text>
+
+  <!-- Arrow: lastchunk -> chunk[1] -->
+  <path d="M 490 110 L 700 110 L 700 390" fill="none" stroke="#64b5f6" stroke-width="1.5" marker-end="url(#ab)"/>
+
+  <!-- Arrow: chunk[0].next -> chunk[1] -->
+  <path d="M 490 152 L 540 152 L 540 340 L 550 375" fill="none" stroke="#ffb74d" stroke-width="1.5" marker-end="url(#ao)"/>
+
+  <!-- Legend -->
+  <rect x="30" y="340" width="260" height="165" fill="#252525" stroke="#444" stroke-width="1" rx="6"/>
+  <text x="45" y="365" fill="#fff" font-size="13" font-weight="bold">Key Points</text>
+  <circle cx="52" cy="385" r="4" fill="#66bb6a"/>
+  <text x="64" y="389" fill="#ccc" font-size="11">chunk[0] full, addr stable</text>
+  <circle cx="52" cy="407" r="4" fill="#64b5f6"/>
+  <text x="64" y="411" fill="#ccc" font-size="11">chunk[1] on different rbuf</text>
+  <circle cx="52" cy="429" r="4" fill="#ffb74d"/>
+  <text x="64" y="433" fill="#ccc" font-size="11">next ptr forms linked list</text>
+  <circle cx="52" cy="451" r="4" fill="#ff8a65"/>
+  <text x="64" y="455" fill="#ccc" font-size="11">zoff offsets remain valid</text>
+  <line x1="45" y1="468" x2="270" y2="468" stroke="#444" stroke-width="0.5"/>
+  <text x="52" y="485" fill="#999" font-size="11">If realloc moved memory:</text>
+  <text x="52" y="500" fill="#ef5350" font-size="11">All zoff would break!</text>
+</svg>

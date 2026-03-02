@@ -1,15 +1,15 @@
 # 📊 Cyclone DDS 学习进度追踪
 
-> 最后更新：2026-02-26
+> 最后更新：2026-03-02
 
 ## 📈 总体进度
 
 | 指标 | 状态 |
 |------|------|
-| 当前阶段 | 阶段 4：源码学习 - 接收路径完整流程（defrag/reorder） |
-| 完成度 | **93%** |
-| 学习天数 | 9 天 |
-| 会话次数 | **13 次** |
+| 当前阶段 | 阶段 4：源码学习 - radmin 分配函数体系与 chunk 设计 |
+| 完成度 | **94%** |
+| 学习天数 | 10 天 |
+| 会话次数 | **14 次** |
 
 ---
 
@@ -261,6 +261,19 @@
 - [x] 理解无 @key Topic 时 eqkey 恒返回 true → 全局唯一 instance（serdata_cdr_eqkey 源码验证）
 - [x] 理解 RHC 中 rhc_instance 的结构：iid、isdisposed、wrcount、sample 循环链表
 
+### radmin 分配函数体系与 chunk 设计（新增）
+- [x] 理解四个 ddsi_rbuf_* 函数的层次：alloc_new（malloc 构造）→ new（构造+替换 current）→ alloc（bump 分配）→ release（引用计数释放）
+- [x] 理解 ddsi_rbuf_alloc_new 是纯构造器，ddsi_rbuf_new 是"构造+替换"的上层封装
+- [x] 理解 alloc_new 仅在初始化（rbp->current==NULL）时直接调用，运行期必须通过 new 替换
+- [x] 理解 ddsi_rbuf_alloc（从 rbuf 切固定大小块）vs ddsi_rmsg_alloc（在 chunk 内增量追加）的区别
+- [x] 理解 chunk 链表解决的核心问题：不搬移已有数据的前提下扩容（realloc 不可行）
+- [x] 理解 chunk 不可行的替代方案：预分配太大浪费 rbuf 尾部空间，realloc 在 bump allocator 上不可行
+- [x] 理解预留检查（max_rmsg_size_w_hdr）vs 实际占用（commit 推进 chunk.u.size）的分离
+- [x] 理解默认配置 rbuf_size=1MB, rmsg_chunk_size=128KB（defconfig.c:26-27）
+- [x] 理解 ddsi_rmsg_alloc 的所有调用点：receiver_state、rdata、sampleinfo、defrag_iv、rsample、rsample_chain_elem
+- [x] 理解 rbufpool 始终只有一个，rbp->current 在不同时刻指向不同 rbuf
+- [x] 理解一个 rmsg 通常只需 1 个 chunk，极端情况下 2 个即可覆盖
+
 ### 接收路径完整流程：socket→rmsg→defrag→reorder→dqueue（新增）
 - [x] 理解 socket 包本质：操作系统剥掉网络协议头后的 UDP payload = RTPS 消息字节流
 - [x] 理解接收线程主循环 do_packet()：rmsg_new → conn_read → setsize → handle_rtps_message → commit
@@ -320,6 +333,7 @@
 | 2026-02-06 | session-11 | radmin 源码深入：rbuf/rmsg/rdata 初始化与 zoff 机制 | [session-11](../sessions/2026-02-06-session-11.md) |
 | 2026-02-09 | session-12 | radmin 内存管理深入：rdata 坐标系、集中式引用计数、rbuf 生命周期 | [session-12](../sessions/2026-02-09-session-12.md) |
 | 2026-02-26 | session-13 | Key/Instance/Sample 数据模型、接收路径完整流程 | [session-13](../sessions/2026-02-26-session-13.md) |
+| 2026-03-02 | session-14 | radmin 分配函数体系、chunk 链表设计、默认配置值 | [session-14](../sessions/2026-03-02-session-14.md) |
 
 ---
 

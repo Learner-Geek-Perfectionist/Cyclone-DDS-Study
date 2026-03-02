@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 620" width="780" height="620" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#e74c3c"/>
+    </marker>
+    <marker id="arr-b" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#3498db"/>
+    </marker>
+  </defs>
+
+  <rect width="780" height="620" fill="#1e1e2e" rx="8"/>
+
+  <text x="390" y="30" text-anchor="middle" fill="#cdd6f4" font-size="16" font-weight="bold">rbuf Memory Layout - objects in raw[]</text>
+  <text x="390" y="50" text-anchor="middle" fill="#6c7086" font-size="11">ddsi_radmin.c | struct ddsi_rbuf | bump allocator</text>
+
+  <rect x="30" y="65" width="720" height="540" fill="none" stroke="#89b4fa" stroke-width="2" rx="6" stroke-dasharray="8,4"/>
+  <text x="40" y="83" fill="#89b4fa" font-size="13" font-weight="bold">rbuf  (raw[] = 1MB)</text>
+  <text x="620" y="83" fill="#6c7086" font-size="10">freeptr</text>
+
+  <!-- rmsg 1 -->
+  <rect x="50" y="95" width="690" height="290" fill="#181825" stroke="#a6adc8" stroke-width="1.5" rx="4"/>
+  <text x="60" y="113" fill="#f9e2af" font-size="12" font-weight="bold">rmsg_1</text>
+  <text x="130" y="113" fill="#6c7086" font-size="10">(refcount + lastchunk + trace)</text>
+
+  <!-- chunk 1 of rmsg 1 -->
+  <rect x="65" y="125" width="300" height="245" fill="#313244" stroke="#f38ba8" stroke-width="1.5" rx="3"/>
+  <text x="75" y="143" fill="#f38ba8" font-size="11" font-weight="bold">chunk_1</text>
+  <text x="155" y="143" fill="#6c7086" font-size="9">rbuf* | next | u.size</text>
+
+  <rect x="80" y="152" width="270" height="30" fill="#45475a" stroke="#94e2d5" stroke-width="1" rx="2"/>
+  <text x="215" y="171" text-anchor="middle" fill="#94e2d5" font-size="11">raw packet (30KB)</text>
+
+  <rect x="80" y="188" width="270" height="24" fill="#45475a" stroke="#74c7ec" stroke-width="1" rx="2"/>
+  <text x="215" y="204" text-anchor="middle" fill="#74c7ec" font-size="11">ddsi_receiver_state</text>
+
+  <rect x="80" y="218" width="270" height="24" fill="#45475a" stroke="#cba6f7" stroke-width="1" rx="2"/>
+  <text x="215" y="234" text-anchor="middle" fill="#cba6f7" font-size="11">sampleinfo x 3</text>
+
+  <rect x="80" y="248" width="270" height="24" fill="#45475a" stroke="#fab387" stroke-width="1" rx="2"/>
+  <text x="215" y="264" text-anchor="middle" fill="#fab387" font-size="11">rdata x 3</text>
+
+  <rect x="80" y="278" width="270" height="24" fill="#45475a" stroke="#a6e3a1" stroke-width="1" rx="2"/>
+  <text x="215" y="294" text-anchor="middle" fill="#a6e3a1" font-size="11">defrag_iv / rsample ...</text>
+
+  <line x1="355" y1="160" x2="355" y2="300" stroke="#f38ba8" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="352" y="345" fill="#f38ba8" font-size="9" text-anchor="end">chunk-&gt;u.size grows &lt;= max_rmsg_size (128KB)</text>
+
+  <!-- chunk 2 of rmsg 1 (rare) -->
+  <rect x="385" y="125" width="300" height="245" fill="#313244" stroke="#f38ba8" stroke-width="1" stroke-dasharray="5,3" rx="3"/>
+  <text x="395" y="143" fill="#f38ba8" font-size="11" font-weight="bold">chunk_2</text>
+  <text x="470" y="143" fill="#585b70" font-size="9">(overflow, rare)</text>
+
+  <rect x="400" y="152" width="270" height="24" fill="#45475a" stroke="#fab387" stroke-width="1" stroke-dasharray="4,2" rx="2"/>
+  <text x="535" y="168" text-anchor="middle" fill="#9399b2" font-size="11">more rdata ...</text>
+
+  <rect x="400" y="182" width="270" height="24" fill="#45475a" stroke="#cba6f7" stroke-width="1" stroke-dasharray="4,2" rx="2"/>
+  <text x="535" y="198" text-anchor="middle" fill="#9399b2" font-size="11">more sampleinfo ...</text>
+
+  <rect x="420" y="230" width="230" height="50" fill="#1e1e2e" stroke="#585b70" stroke-width="1" rx="3"/>
+  <text x="535" y="250" text-anchor="middle" fill="#585b70" font-size="10">Only needed in extreme cases</text>
+  <text x="535" y="264" text-anchor="middle" fill="#585b70" font-size="10">(UDP max 64KB, chunk cap 128KB)</text>
+
+  <!-- chunk 1 -> chunk 2 arrow -->
+  <line x1="365" y1="155" x2="383" y2="155" stroke="#e74c3c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="370" y="150" fill="#e74c3c" font-size="8">next</text>
+
+  <!-- rmsg 2 -->
+  <rect x="50" y="400" width="360" height="180" fill="#181825" stroke="#a6adc8" stroke-width="1.5" rx="4"/>
+  <text x="60" y="418" fill="#f9e2af" font-size="12" font-weight="bold">rmsg_2</text>
+  <text x="130" y="418" fill="#6c7086" font-size="10">(small pkt: 1 chunk enough)</text>
+
+  <!-- chunk 1 of rmsg 2 -->
+  <rect x="65" y="428" width="330" height="140" fill="#313244" stroke="#f38ba8" stroke-width="1.5" rx="3"/>
+  <text x="75" y="446" fill="#f38ba8" font-size="11" font-weight="bold">chunk_1</text>
+
+  <rect x="80" y="453" width="300" height="24" fill="#45475a" stroke="#94e2d5" stroke-width="1" rx="2"/>
+  <text x="230" y="469" text-anchor="middle" fill="#94e2d5" font-size="11">raw packet (1KB)</text>
+
+  <rect x="80" y="481" width="300" height="22" fill="#45475a" stroke="#74c7ec" stroke-width="1" rx="2"/>
+  <text x="230" y="496" text-anchor="middle" fill="#74c7ec" font-size="11">ddsi_receiver_state</text>
+
+  <rect x="80" y="507" width="300" height="22" fill="#45475a" stroke="#cba6f7" stroke-width="1" rx="2"/>
+  <text x="230" y="522" text-anchor="middle" fill="#cba6f7" font-size="11">sampleinfo x 1</text>
+
+  <rect x="80" y="533" width="300" height="22" fill="#45475a" stroke="#fab387" stroke-width="1" rx="2"/>
+  <text x="230" y="548" text-anchor="middle" fill="#fab387" font-size="11">rdata x 1</text>
+
+  <!-- free space -->
+  <rect x="430" y="400" width="300" height="180" fill="#11111b" stroke="#585b70" stroke-width="1" stroke-dasharray="6,3" rx="4"/>
+  <text x="580" y="495" text-anchor="middle" fill="#585b70" font-size="13">(free space)</text>
+  <text x="580" y="515" text-anchor="middle" fill="#585b70" font-size="10">freeptr points here</text>
+
+  <!-- freeptr arrow -->
+  <line x1="660" y1="83" x2="660" y2="395" stroke="#3498db" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="660" y1="395" x2="435" y2="395" stroke="#3498db" stroke-width="1.5" marker-end="url(#arr-b)"/>
+
+  <!-- legend -->
+  <rect x="30" y="590" width="12" height="12" fill="#94e2d5" rx="2"/>
+  <text x="48" y="601" fill="#cdd6f4" font-size="10">raw packet</text>
+  <rect x="140" y="590" width="12" height="12" fill="#74c7ec" rx="2"/>
+  <text x="158" y="601" fill="#cdd6f4" font-size="10">receiver_state</text>
+  <rect x="280" y="590" width="12" height="12" fill="#cba6f7" rx="2"/>
+  <text x="298" y="601" fill="#cdd6f4" font-size="10">sampleinfo</text>
+  <rect x="400" y="590" width="12" height="12" fill="#fab387" rx="2"/>
+  <text x="418" y="601" fill="#cdd6f4" font-size="10">rdata</text>
+  <rect x="490" y="590" width="12" height="12" fill="#a6e3a1" rx="2"/>
+  <text x="508" y="601" fill="#cdd6f4" font-size="10">defrag_iv/rsample</text>
+  <rect x="650" y="590" width="12" height="12" fill="none" stroke="#f38ba8" stroke-width="1.5" rx="2"/>
+  <text x="668" y="601" fill="#cdd6f4" font-size="10">chunk border</text>
+</svg>

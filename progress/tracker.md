@@ -1,15 +1,15 @@
 # 📊 Cyclone DDS 学习进度追踪
 
-> 最后更新：2026-03-02
+> 最后更新：2026-03-03
 
 ## 📈 总体进度
 
 | 指标 | 状态 |
 |------|------|
-| 当前阶段 | 阶段 4：源码学习 - radmin 分配函数体系与 chunk 设计 |
-| 完成度 | **94%** |
-| 学习天数 | 10 天 |
-| 会话次数 | **14 次** |
+| 当前阶段 | 阶段 4：源码学习 - radmin 内存释放链路与 defrag fragtree |
+| 完成度 | **95%** |
+| 学习天数 | 11 天 |
+| 会话次数 | **15 次** |
 
 ---
 
@@ -274,6 +274,28 @@
 - [x] 理解 rbufpool 始终只有一个，rbp->current 在不同时刻指向不同 rbuf
 - [x] 理解一个 rmsg 通常只需 1 个 chunk，极端情况下 2 个即可覆盖
 
+### radmin 内存释放链路与 defrag fragtree（新增）
+- [x] 理解 ddsi_rbuf_alloc 的"预留-确认"两阶段协议：返回 freeptr = 预留，commit = 确认
+- [x] 理解单线程保证下返回 freeptr 即完成分配，无需额外标记
+- [x] 理解 commit 时 refcount==0 的零成本丢弃：freeptr 不动，下次覆盖即丢弃
+- [x] 理解 max_rmsg_size_w_hdr 中 max(rmsg头, chunk头) 的设计意图：统一两种场景取最坏情况
+- [x] 理解 offsetof(rmsg, chunk) + sizeof(chunk) == sizeof(rmsg) 的 static assert 保证
+- [x] 理解 ddsi_rmsg_alloc 的两条路径：正常路径（chunk 内追加 u.size）vs 扩容路径（commit 旧 chunk + 分配新 chunk）
+- [x] 理解 ddsi_rmsg_alloc 立即推进 chunk->u.size vs ddsi_rbuf_alloc 延迟推进 freeptr 的原因
+- [x] 理解完整的内存释放链路：rdata_unref → rmsg_unref → rmsg_free → rbuf_release → ddsrt_free(rbuf)
+- [x] 理解 ddsrt_free 是 libc free() 的薄封装，支持通过 ddsrt_set_allocator 替换分配器
+- [x] 理解分片不会合并为连续 buffer，fragchain 零拷贝引用各自的 rmsg 数据
+- [x] 理解 rmsg 直接在 rbuf 的 raw[] 中就地构造，无独立 malloc/free
+- [x] 理解 rdata->rmsg back-pointer 的作用：通过反向指针操作 rmsg 的 refcount
+- [x] 理解 defrag_iv 结构体：avlnode + [min, maxp1) + first/last rdata 链表
+- [x] 理解 fragtree 以 min 为排序键的 AVL 树，每个节点代表一段连续已收到的字节范围
+- [x] 理解 sentinel 哨兵节点 [0,0)：简化边界处理，保证 avl_lookup_pred_eq 总有前驱
+- [x] 理解区间合并机制：相邻/重叠区间合并为更大区间，节点数递减
+- [x] 理解重组完成判定：树合并为单节点 [0, sample_size)
+- [x] 理解 lastfrag 快速路径优化：分片通常顺序到达，O(1) 跳过树查找
+- [x] 理解 defrag_rsample_addiv：创建区间节点 + addbias + 插入 fragtree + 更新 lastfrag
+- [x] 理解 static 函数无 ddsi_ 前缀的命名约定（文件私有 vs 模块公开）
+
 ### 接收路径完整流程：socket→rmsg→defrag→reorder→dqueue（新增）
 - [x] 理解 socket 包本质：操作系统剥掉网络协议头后的 UDP payload = RTPS 消息字节流
 - [x] 理解接收线程主循环 do_packet()：rmsg_new → conn_read → setsize → handle_rtps_message → commit
@@ -334,6 +356,7 @@
 | 2026-02-09 | session-12 | radmin 内存管理深入：rdata 坐标系、集中式引用计数、rbuf 生命周期 | [session-12](../sessions/2026-02-09-session-12.md) |
 | 2026-02-26 | session-13 | Key/Instance/Sample 数据模型、接收路径完整流程 | [session-13](../sessions/2026-02-26-session-13.md) |
 | 2026-03-02 | session-14 | radmin 分配函数体系、chunk 链表设计、默认配置值 | [session-14](../sessions/2026-03-02-session-14.md) |
+| 2026-03-03 | session-15 | radmin 内存释放链路、defrag fragtree 源码 | [session-15](../sessions/2026-03-03-session-15.md) |
 
 ---
 

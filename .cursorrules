@@ -335,7 +335,9 @@
 
 所有示意图、内存布局图、架构图一律使用 **SVG** 格式，保存到 `progress/` 目录。
 
-### SVG 编写规则
+参考范例：`progress/rdata-pipeline-bias.svg`
+
+### SVG 基础规则
 
 1. **不加 XML 声明**：不要写 `<?xml version="1.0" encoding="UTF-8"?>`，直接以 `<svg>` 标签开头
 2. **纯 ASCII 文本**：SVG 中的所有 `<text>` 内容必须使用英文，禁止中文/Unicode 特殊字符（如 `→`、`×`、`₁` 等），避免编码损坏
@@ -345,19 +347,53 @@
 3. **XML 实体转义**：在 `<text>` 中使用 `&gt;` `&lt;` `&amp;` 代替 `>` `<` `&`
 4. **等宽字体**：使用 `font-family="Consolas, monospace"`
 5. **暗色主题**：背景 `#1e1e2e`，与 Cursor 暗色主题一致
-6. **配色方案**（Catppuccin Mocha 风格）：
-   - 边框/标题：`#89b4fa`（蓝）、`#f9e2af`（黄）
-   - raw packet：`#94e2d5`（青）
-   - receiver_state：`#74c7ec`（浅蓝）
-   - sampleinfo：`#cba6f7`（紫）
-   - rdata：`#fab387`（橙）
-   - defrag_iv/rsample：`#a6e3a1`（绿）
-   - chunk 边界：`#f38ba8`（粉红）
-   - 箭头/指针：`#e74c3c`（红）、`#3498db`（蓝）
-   - 普通文本：`#cdd6f4`，次要文本：`#6c7086`
-   - 背景层次：`#181825`（深）、`#313244`（中）、`#45475a`（浅）
-7. **包含图例**：底部添加颜色图例说明
-8. **文件命名**：`progress/<主题>-<描述>.svg`，如 `rbuf-memory-layout.svg`
+6. **包含图例**：底部添加颜色图例说明
+7. **文件命名**：`progress/<主题>-<描述>.svg`，如 `rbuf-memory-layout.svg`
+
+### 配色方案（Catppuccin Mocha 风格）
+
+| 用途 | 颜色 | 色号 |
+|------|------|------|
+| 边框/标题 | 蓝 | `#89b4fa` |
+| 高亮标签 | 黄 | `#f9e2af` |
+| 函数签名 | 青 | `#94e2d5` |
+| 浅蓝模块 | 浅蓝 | `#74c7ec` |
+| 紫色模块 | 紫 | `#cba6f7` |
+| rdata/橙色模块 | 橙 | `#fab387` |
+| 绿色模块 | 绿 | `#a6e3a1` |
+| 粉红/警告 | 粉红 | `#f38ba8` |
+| 箭头/指针 | 红/蓝 | `#e74c3c` / `#3498db` |
+| 普通文本 | 浅灰 | `#cdd6f4` |
+| 代码引用/次要文本 | 暗灰 | `#6c7086` |
+| 背景层次 | 深/中/浅 | `#181825` / `#313244` / `#45475a` |
+
+### 三级文本层次（最重要，严禁混排）
+
+SVG 中的文本分为三个层级，**每个层级有固定的颜色、字号和缩进**，绝不混排：
+
+| 层级 | 用途 | 颜色 | 字号 | x 偏移 | 示例 |
+|------|------|------|------|--------|------|
+| **L1 标题** | 阶段名/区块标题 | 各阶段主色（粗体） | 12-13 | 容器 x+15 | `Phase 2: ddsi_defrag_rsample(...)` |
+| **L2 函数签名** | 函数名 + 完整形参 + 用途 | `#94e2d5` 青 | 11 | 容器 x+15 | `defrag_add_fragment(defrag, sample, rdata, sampleinfo) -- grow predeq at tail:` |
+| **L3 代码引用** | `file:line  actual_code;` | `#6c7086` 暗灰 | 10 | 容器 x+30 | `ddsi_radmin.c:1216  ddsi_rdata_addbias(rdata);` |
+
+#### 排版要求
+
+1. **严禁 L1/L2/L3 混排在同一视觉层级**：不同层级必须用颜色 + 缩进区分
+2. **函数签名必须完整**：写 `defrag_add_fragment(defrag, sample, rdata, sampleinfo)` 而非 `defrag_add_fragment()`
+3. **代码引用必须展示实际源码**：写 `ddsi_radmin.c:1028  ddsi_rdata_addbias(rdata);` 而非 `ddsi_radmin.c:1028  called from defrag_rsample_addiv`
+4. **同一函数的多个代码行**：L2 函数签名下方跟多行 L3 代码，每行独立展示 `file:line code;`
+5. **描述性文本用 `#cdd6f4` 白色**（font-size=11），与 L3 代码灰色区分开
+6. **黄色标签**（`#f9e2af` bold）用于小节标题（如 `Return value:`、`+RDATA_BIAS ...`），作为 L1 和 L2 之间的分隔
+
+### 间距与布局规则
+
+1. **文本与容器边框间距** ≥ 10px：文本不得紧贴或超出容器边框
+2. **相邻容器间距** ≥ 8px：Phase 之间、内部 box 之间保持间隙
+3. **分隔线**：同一 box 内不同逻辑段之间用 `#45475a` 细线分隔
+4. **柱状图/图表**：标签不得与标题重叠，标题下方至少留 15px 再放图表元素
+5. **嵌套结构**：外层 Phase box（`#181825` 填充 + 彩色描边）→ 内层 content box（`#313244` 填充）
+6. **完成后必须验证**：检查所有文本 y 坐标是否在其容器 rect 的 y ~ y+height 范围内
 
 ## 源码学习
 

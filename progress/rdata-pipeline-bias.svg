@@ -47,7 +47,7 @@
   <!-- Call site [1] -->
   <text x="75" y="354" fill="#94e2d5" font-family="Consolas, monospace" font-size="11">defrag_rsample_addiv(sample, rdata, path) -- new interval node in fragtree:</text>
   <text x="90" y="370" fill="#6c7086" font-family="Consolas, monospace" font-size="10">ddsi_radmin.c:1028  ddsi_rdata_addbias(rdata);</text>
-  <text x="90" y="384" fill="#6c7086" font-family="Consolas, monospace" font-size="10">ddsi_radmin.c:1029  ddsrt_avl_insert_ipath(&amp;..._treedef, &amp;sample-&gt;fragtree, newiv, path);</text>
+  <text x="90" y="384" fill="#6c7086" font-family="Consolas, monospace" font-size="10">ddsi_radmin.c:1029  ddsrt_avl_insert_ipath(&amp;rsample_defrag_fragtree_treedef, &amp;sample-&gt;fragtree, newiv, path);</text>
 
   <!-- Call site [2] -->
   <text x="75" y="404" fill="#94e2d5" font-family="Consolas, monospace" font-size="11">defrag_add_fragment(defrag, sample, rdata, sampleinfo) -- grow predeq at tail:</text>

@@ -79,6 +79,7 @@ cdr 源码     cyclonedds/src/core/cdr/src/           dds_cdrstream.c
 
 ## 回答规范
 
+- 称呼用户为 "Xin"
 - 核心解释控制在 200 字以内
 - 代码示例添加中文注释
 - 引用源码时附 `文件名:行号`

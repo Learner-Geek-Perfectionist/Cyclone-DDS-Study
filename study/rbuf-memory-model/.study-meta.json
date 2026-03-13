@@ -1,0 +1,106 @@
+{
+  "topic": "rbuf 内存模型",
+  "source_path": "src/cyclonedds/src/core/ddsi/",
+  "generated_at": "2026-03-14",
+  "lsp_enabled": true,
+  "lsp_status": "已使用",
+  "lsp_calls": {
+    "documentSymbol": 1,
+    "hover": 0,
+    "findReferences": 0,
+    "outgoingCalls": 0,
+    "total": 1
+  },
+  "symbols_analyzed": 68,
+  "functions_analyzed": [
+    "ddsi_rbufpool_new",
+    "ddsi_rbufpool_setowner",
+    "ddsi_rbufpool_free",
+    "ddsi_rbuf_alloc_new",
+    "ddsi_rbuf_new",
+    "ddsi_rbuf_release",
+    "ddsi_rbuf_alloc",
+    "ddsi_rmsg_new",
+    "ddsi_rmsg_setsize",
+    "ddsi_rmsg_commit",
+    "ddsi_rmsg_free",
+    "ddsi_rmsg_alloc",
+    "ddsi_rmsg_addbias",
+    "ddsi_rmsg_rmbias_and_adjust",
+    "ddsi_rmsg_unref",
+    "ddsi_rdata_new",
+    "ddsi_rdata_addbias",
+    "ddsi_rdata_rmbias_and_adjust",
+    "ddsi_rdata_unref",
+    "ddsi_defrag_new",
+    "ddsi_defrag_free",
+    "ddsi_defrag_rsample",
+    "defrag_add_fragment",
+    "defrag_try_merge_with_succ",
+    "is_complete",
+    "rsample_convert_defrag_to_reorder",
+    "defrag_limit_samples",
+    "ddsi_defrag_nackmap",
+    "ddsi_defrag_notegap",
+    "ddsi_defrag_prune",
+    "ddsi_reorder_new",
+    "ddsi_reorder_free",
+    "ddsi_reorder_rsample",
+    "ddsi_reorder_gap",
+    "ddsi_reorder_rsample_dup_first",
+    "ddsi_reorder_nackmap",
+    "ddsi_reorder_drop_upto",
+    "ddsi_reorder_wantsample",
+    "ddsi_fragchain_unref",
+    "ddsi_fragchain_adjust_refcount",
+    "ddsi_dqueue_new",
+    "ddsi_dqueue_start",
+    "ddsi_dqueue_free",
+    "dqueue_thread",
+    "ddsi_dqueue_enqueue",
+    "ddsi_dqueue_enqueue_deferred_wakeup",
+    "ddsi_dqueue_enqueue_trigger",
+    "ddsi_dqueue_enqueue1",
+    "ddsi_dqueue_enqueue_callback",
+    "ddsi_dqueue_is_full",
+    "ddsi_dqueue_wait_until_empty_if_full",
+    "ddsi_dqueue_step_deaf"
+  ],
+  "chapters": [
+    {
+      "file": "00-overview.md",
+      "title": "快速导览",
+      "lines": 282
+    },
+    {
+      "file": "01-rbufpool-rbuf.md",
+      "title": "缓冲池与接收缓冲区",
+      "lines": 551
+    },
+    {
+      "file": "02-rmsg-rdata.md",
+      "title": "消息管理与引用计数",
+      "lines": 668
+    },
+    {
+      "file": "03-defrag.md",
+      "title": "分片重组机制",
+      "lines": 884
+    },
+    {
+      "file": "04-reorder.md",
+      "title": "序列重排机制",
+      "lines": 672
+    },
+    {
+      "file": "05-dqueue.md",
+      "title": "投递队列",
+      "lines": 688
+    },
+    {
+      "file": "appendix-references.md",
+      "title": "参考资料索引",
+      "lines": 42
+    }
+  ]
+}

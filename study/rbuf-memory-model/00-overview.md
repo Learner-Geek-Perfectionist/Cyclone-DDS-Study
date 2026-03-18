@@ -1,282 +1,221 @@
-# 快速导览：rbuf 接收缓冲区内存模型
+# rbuf 内存模型总览
 
-## 1. 项目简介
+## 1. 背景与目标
 
-Cyclone DDS 的 **接收路径**（receive path）需要在高吞吐量、低延迟条件下完成以下工作：从 UDP socket 收包、解码 RTPS 协议、将分片重组为完整样本、按序列号排序、最终投递给上层读者。这一切都依赖于一套精心设计的 **接收缓冲区内存模型**——即本系列所研究的 `radmin`（Receive Administration）子系统。
+Cyclone DDS 的接收路径（receive path）需要在高吞吐量场景下完成以下任务：
 
-该子系统的核心设计目标：
+1. 从 UDP 套接字接收原始数据包
+2. 解析 RTPS 协议子消息
+3. 将分片数据重组为完整样本
+4. 将乱序到达的样本重新排列
+5. 将有序样本投递给上层 DDS reader
 
-- **零拷贝**：接收到的 UDP 数据包与所有解码/索引信息存储在同一块连续内存中，避免额外的 `memcpy`
-- **单线程分配、多线程释放**：每个接收线程独占自己的缓冲池进行分配，任意线程可通过原子引用计数释放
-- **自适应内存管理**：顺序分配策略最小化碎片，引用计数归零后自动回收整块缓冲区
-- **流水线处理**：分片重组（defrag）、序列重排（reorder）、异步投递（dqueue）形成三级管线
+为了在上述流程中**最小化动态内存分配**并实现**零拷贝**语义，Cyclone DDS 设计了一套精巧的四层内存管理体系，即 **rbuf 内存模型**。其核心思想是：
 
-> 📍 源码：[ddsi_radmin.c:40-260](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L40)（OVERVIEW 注释，包含完整设计理念）
+- 使用大块预分配缓冲区（rbuf）进行顺序分配
+- 所有解码信息、索引结构都**紧邻原始数据包**存放在同一块内存中
+- 通过引用计数管理整个消息的生命周期，而非单独管理每个子结构
+- 利用"单一所有者线程"约束简化并发控制
 
 ## 2. 核心概念速览
 
-### 2.1 四层存储体系
+| 概念 | 含义 |
+|------|------|
+| [ddsi_rbufpool](./01-rbufpool-rbuf.md#struct-ddsi_rbufpool) | 接收缓冲池，每个接收线程拥有一个 |
+| [ddsi_rbuf](./01-rbufpool-rbuf.md#struct-ddsi_rbuf) | 大块连续内存缓冲区（默认 1 MB），用于顺序分配 |
+| [ddsi_rmsg](./02-rmsg-rdata.md#struct-ddsi_rmsg) | 一条接收消息，包含引用计数和内嵌 chunk |
+| [ddsi_rmsg_chunk](./02-rmsg-rdata.md#struct-ddsi_rmsg_chunk) | rmsg 的内存块，可动态链接多个 chunk |
+| [ddsi_rdata](./02-rmsg-rdata.md#struct-ddsi_rdata) | 一个 Data/DataFrag 子消息的描述符 |
+| [ddsi_defrag](./03-defrag.md#struct-ddsi_defrag) | 碎片重组器，基于区间树跟踪已收到的片段 |
+| [ddsi_reorder](./04-reorder.md#struct-ddsi_reorder) | 重排序器，将乱序样本按序列号排列 |
+| [ddsi_dqueue](./05-dqueue.md#struct-ddsi_dqueue) | 投递队列，将有序样本链从接收线程传递给处理线程 |
 
-rbuf 内存模型采用四层层级结构，从粗粒度到细粒度依次为：
+## 3. 四层存储层次
 
-> **图 1** 四层存储体系——从缓冲池到子消息数据
+rbuf 内存模型的存储层次如下：
 
-| 层级 | 结构体 | 职责 | 生命周期管理 |
-|:--|:--|:--|:--|
-| L1 缓冲池 | `ddsi_rbufpool` | 管理一组 rbuf，每个接收线程拥有一个池 | 线程启动时创建，线程退出时销毁 |
-| L2 接收缓冲区 | `ddsi_rbuf` | 大块连续内存（默认 1MB），容纳多个 rmsg | 原子引用计数，归零时 free |
-| L3 消息 | `ddsi_rmsg` | 对应一个 UDP 包及其解码数据 | 双偏置引用计数（$2^{31}$ + $N \times 2^{20}$） |
-| L4 子消息数据 | `ddsi_rdata` | 对应一个 Data/DataFrag 子消息 | 不独立计数，贡献到所属 rmsg |
+```mermaid
+graph TD
+    Pool["ddsi_rbufpool<br/>接收缓冲池"]
+    Buf["ddsi_rbuf<br/>大块缓冲区 1 MB"]
+    Msg["ddsi_rmsg<br/>一条 UDP 消息"]
+    Data["ddsi_rdata<br/>子消息描述符"]
 
-### 2.2 三级处理管线
+    Pool -->|"管理 1..N 个"| Buf
+    Buf -->|"顺序分配 N 个"| Msg
+    Msg -->|"内嵌分配 N 个"| Data
 
-接收到的数据经过三级处理后到达应用层：
+    style Pool fill:#e1f5fe
+    style Buf fill:#b3e5fc
+    style Msg fill:#81d4fa
+    style Data fill:#4fc3f7
+```
 
-| 管线阶段 | 结构体 | 输入 | 输出 | 核心算法 |
-|:--|:--|:--|:--|:--|
-| 分片重组 | `ddsi_defrag` | `ddsi_rdata`（单个分片） | `ddsi_rsample`（完整样本） | AVL 树区间合并 |
-| 序列重排 | `ddsi_reorder` | `ddsi_rsample`（乱序样本） | `ddsi_rsample_chain`（有序链） | 序列号区间树 |
-| 异步投递 | `ddsi_dqueue` | `ddsi_rsample_chain` | 回调给上层 handler | 生产者-消费者队列 |
+**层次关系说明：**
 
-### 2.3 关键设计理念
+- **rbufpool** 是最顶层容器，每个接收线程独占一个。它维护一个"当前 rbuf"指针
+- **rbuf** 是一块大内存（默认 1 MB），通过 `freeptr` 做顺序分配（bump allocator）
+- **rmsg** 是 rbuf 中分配的一条消息，包含原始 UDP 数据包和所有派生的管理数据
+- **rdata** 是 rmsg 内部分配的子消息描述符，指向原始数据的特定区域
 
-**双偏置引用计数**：rmsg 的引用计数使用两级偏置（bias）来区分处理阶段：
+## 4. 典型接收场景剖析
 
-- **未提交偏置**（$2^{31}$）：消息在同步处理期间，refcount 包含此偏置，用于检测非法操作
-- **rdata 偏置**（$2^{20}$）：每个 rdata 被 defrag 接受后加上此偏置，延迟实际引用计数的更新，避免在多个 reorder admin 之间反复调整
+### 4.1 正常接收流程
 
-> 📍 源码：[ddsi_radmin.c:152-158](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L152)（偏置设计说明）
+以接收一个 UDP 数据包为例，追踪完整的处理路径：
 
-**union 双态复用**：`ddsi_rsample` 使用 union 在 defrag 和 reorder 两个阶段复用同一块内存，通过 `rsample_convert_defrag_to_reorder` 完成状态切换。
+```mermaid
+sequenceDiagram
+    participant RT as 接收线程
+    participant Pool as rbufpool
+    participant Buf as rbuf
+    participant Defrag as defrag
+    participant Reorder as reorder
+    participant DQ as dqueue
 
-> 📍 源码：[ddsi_radmin.c:836-852](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L836)（union 定义）
+    RT->>Pool: ddsi_rmsg_new()
+    Pool->>Buf: 从 freeptr 分配
+    Buf-->>RT: rmsg 指针
 
-## 3. 典型场景剖析：UDP 包接收到投递
+    RT->>RT: recvfrom(rmsg.payload)
+    RT->>RT: ddsi_rmsg_setsize(实际大小)
 
-下面以一个完整的 UDP 数据包（包含一个 Data 子消息，无分片）从网卡到达到最终投递给应用层为例，追踪完整的执行路径。
+    loop 每个 Data/DataFrag 子消息
+        RT->>RT: ddsi_rdata_new(rmsg)
+        RT->>Defrag: ddsi_defrag_rsample()
+        alt 样本完整
+            Defrag-->>RT: rsample
+            RT->>Reorder: ddsi_reorder_rsample()
+            alt 可投递
+                Reorder-->>RT: sample_chain
+                RT->>DQ: ddsi_dqueue_enqueue()
+            end
+        end
+    end
 
-### 3.1 阶段一：接收线程分配缓冲区
+    RT->>RT: ddsi_rmsg_commit()
+    Note over RT,Buf: 若 refcount=0，<br/>内存可立即回收
+```
 
-接收线程从自己的 `ddsi_rbufpool` 中分配消息空间：
+这段流程对应源码中的伪代码（见 [ddsi_radmin.c:169-218](../../source/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L169)）：
 
 ```c
-// 伪代码：接收线程主循环（ddsi_radmin.c:171-187 OVERVIEW 注释）
-rbpool = ddsi_rbufpool_new(logcfg, 1MB, 128KB);
-
+// 接收线程主循环
 while (running) {
-    rmsg = ddsi_rmsg_new(rbpool);       // 从 rbuf 顺序分配
-    actualsize = recvfrom(sock, DDSI_RMSG_PAYLOAD(rmsg), 64KB);
-    ddsi_rmsg_setsize(rmsg, actualsize); // 记录实际大小
-    process(rmsg);                       // 同步处理
-    ddsi_rmsg_commit(rmsg);              // 提交或释放
+    rmsg = ddsi_rmsg_new(rbpool);          // 从缓冲池分配
+    sz = recvfrom(RMSG_PAYLOAD(rmsg), 64K); // 接收 UDP 数据包
+    ddsi_rmsg_setsize(rmsg, sz);           // 设置实际大小
+
+    // 处理消息中的每个子消息
+    for (rdata in each Data/DataFrag) {
+        sample = ddsi_defrag_rsample(pwr->defrag, rdata, &sampleinfo);
+        if (sample) {
+            reorder_result = ddsi_reorder_rsample(&sc, pwr->reorder, sample, &adjust);
+            if (reorder_result == DELIVER)
+                ddsi_dqueue_enqueue(dq, &sc, reorder_result);
+            ddsi_fragchain_adjust_refcount(fragchain, adjust);
+        }
+    }
+
+    ddsi_rmsg_commit(rmsg);  // 提交或丢弃消息
 }
 ```
 
-**关键细节**：
+### 4.2 内存布局示意
 
-- `ddsi_rmsg_new` 在当前 rbuf 的 `freeptr` 位置顺序分配，初始 refcount 为 $2^{31}$（未提交偏置）
-- 若当前 rbuf 剩余空间不足，自动分配新的 rbuf 替换
-- 接收到的 UDP 数据紧跟在 `ddsi_rmsg` 结构体之后（通过 `DDSI_RMSG_PAYLOAD` 宏访问）
-
-> 📍 源码：[ddsi_radmin.c:491-518](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L491)（`ddsi_rbuf_alloc` 顺序分配逻辑）
-
-### 3.2 阶段二：解析子消息并创建 rdata
-
-接收线程解析 RTPS 包，为每个 Data/DataFrag 子消息创建 `ddsi_rdata`：
-
-```c
-// 伪代码：为子消息创建 rdata
-rdata = ddsi_rdata_new(rmsg, start, endp1,
-                       submsg_offset, payload_offset,
-                       keyhash_offset);
-```
-
-`ddsi_rdata` 不拷贝数据，仅记录偏移量指向 rmsg 中的原始数据：
-
-- `min` / `maxp1`：分片字节范围 `[min, maxp1)`
-- `submsg_zoff`：子消息头相对包起始的偏移
-- `payload_zoff`：载荷数据相对包起始的偏移
-
-> 📍 源码：[ddsi_radmin.h:98-108](../../src/cyclonedds/src/core/ddsi/include/dds/ddsi/ddsi_radmin.h#L98)（`ddsi_rdata` 结构体定义）
-
-### 3.3 阶段三：分片重组（defrag）
-
-rdata 被送入对应 proxy writer 的 defrag 实例：
-
-```c
-// 伪代码：分片重组
-sample = ddsi_defrag_rsample(pwr->defrag, rdata, &sampleinfo);
-```
-
-- **无分片场景**（本例）：defrag 发现 rdata 已覆盖完整样本范围，立即返回完整的 `ddsi_rsample`
-- **有分片场景**：defrag 将 rdata 插入 AVL 树索引的区间集合，尝试与相邻区间合并，直到所有分片齐全
-
-当 defrag 决定保留 rdata 时，调用 `ddsi_rmsg_addbias` 为 rmsg 的 refcount 加上 $2^{20}$ 的偏置。
-
-返回完整样本后，调用 `rsample_convert_defrag_to_reorder` 将 `ddsi_rsample` 的 union 从 defrag 态切换为 reorder 态。
-
-> 📍 源码：[ddsi_radmin.c:1324-1445](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L1324)（`ddsi_defrag_rsample` 主逻辑）
-
-### 3.4 阶段四：序列重排（reorder）
-
-完整样本送入 reorder 进行序列号排序：
-
-```c
-// 伪代码：序列重排
-refcount_adjust = 0;
-result = ddsi_reorder_rsample(&sc, pwr->reorder,
-                              sample, &refcount_adjust);
-if (result > 0) {
-    // sc 中包含 result 个连续样本，可以投递
-}
-```
-
-**三种重排模式**：
-
-| 模式 | 行为 | 适用场景 |
-|:--|:--|:--|
-| `NORMAL` | 严格按序列号排序，有空洞则缓存 | 可靠通信（默认） |
-| `MONOTONICALLY_INCREASING` | 只要比上次大就接受 | 单调递增保证 |
-| `ALWAYS_DELIVER` | 立即投递，不做排序 | 尽力交付 |
-
-reorder 返回 `DDSI_REORDER_DELIVER`（正数）时，输出参数 `sc` 中包含一条有序的 `ddsi_rsample_chain`，其中的样本数量等于返回值。
-
-> 📍 源码：[ddsi_radmin.c:1895-2220](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L1895)（`ddsi_reorder_rsample` 主逻辑）
-
-### 3.5 阶段五：引用计数调整
-
-在遍历所有 reorder admin 之后，统一调整 rdata 的引用计数：
-
-```c
-// 伪代码：批量调整引用计数
-ddsi_fragchain_adjust_refcount(fragchain, refcount_adjust);
-```
-
-这一步将每个 rdata 所属 rmsg 的 refcount 减去 $2^{20}$（移除 rdata 偏置），同时加上实际被 reorder 接受的引用数。批量操作的好处是避免在多个 reorder admin 逐一处理时反复修改原子变量。
-
-> 📍 源码：[ddsi_radmin.c:649-670](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L649)（`ddsi_rmsg_rmbias_and_adjust`）
-
-### 3.6 阶段六：异步投递（dqueue）
-
-有序样本链入队到投递队列，由专用线程消费：
-
-```c
-// 伪代码：入队投递
-ddsi_dqueue_enqueue(dqueue, &sc, result);
-```
-
-投递队列（`ddsi_dqueue`）的消费线程从队列中取出样本链，逐个调用 handler 回调函数处理，最后通过 `ddsi_fragchain_unref` 释放 rdata 引用。当 rmsg 的 refcount 降至 0 时，该消息占用的 rbuf 空间即可被回收。
-
-dqueue 还支持三种特殊的 **bubble** 控制信号：
-
-| Bubble 类型 | 用途 |
-|:--|:--|
-| `DDSI_DQBK_STOP` | 通知消费线程退出 |
-| `DDSI_DQBK_CALLBACK` | 在消费线程中执行回调 |
-| `DDSI_DQBK_RDGUID` | 切换当前处理的目标 reader |
-
-> 📍 源码：[ddsi_radmin.c:2494-2548](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L2494)（dqueue 结构体与 bubble 定义）
-
-### 3.7 阶段七：消息提交与内存回收
-
-接收线程处理完一个 UDP 包的所有子消息后，调用 `ddsi_rmsg_commit`：
-
-```c
-ddsi_rmsg_commit(rmsg);
-```
-
-commit 操作移除 $2^{31}$ 的未提交偏置。如果此时 refcount 恰好为 0（所有 rdata 已被投递或丢弃），rmsg 所占空间可立即复用——rbuf 的 `freeptr` 无需更新，下一次 `ddsi_rmsg_new` 会覆盖相同位置。
-
-> 📍 源码：[ddsi_radmin.c:603-633](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L603)（`ddsi_rmsg_commit` 实现）
-
-### 3.8 完整执行路径总结
+一条 rmsg 在 rbuf 中的内存布局（所有数据紧密相邻）：
 
 ```mermaid
-flowchart LR
-    subgraph 接收线程
-        A[recvfrom] --> B[rmsg_new]
-        B --> C[解析 RTPS]
-        C --> D[rdata_new]
-        D --> E[defrag_rsample]
-        E --> F[reorder_rsample]
-        F --> G[adjust_refcount]
-        G --> H[rmsg_commit]
+graph LR
+    subgraph "rmsg 在 rbuf 中的布局"
+        A["rmsg 头<br/>(refcount + chunk)"]
+        B["UDP 原始数据<br/>(packet payload)"]
+        C["rdata #1"]
+        D["sampleinfo #1"]
+        E["rsample #1"]
+        F["rdata #2"]
+        G["..."]
     end
-    subgraph 投递线程
-        I[dqueue 消费] --> J[handler 回调]
-        J --> K[fragchain_unref]
-    end
-    F -->|入队| I
+
+    A --> B --> C --> D --> E --> F --> G
+
+    style A fill:#ffcdd2
+    style B fill:#fff9c4
+    style C fill:#c8e6c9
+    style D fill:#c8e6c9
+    style E fill:#c8e6c9
+    style F fill:#c8e6c9
 ```
 
-> **图 2** UDP 包接收到投递的完整执行路径
+关键要点：**所有管理结构都分配在同一个 rmsg 内部**，通过 [ddsi_rmsg_alloc](./02-rmsg-rdata.md#struct-ddsi_rmsg) 从当前 chunk 的末尾顺序分配。这意味着当 rmsg 的引用计数归零时，所有相关数据可以一次性释放。
 
-## 4. 架构全景图
+## 5. 系统初始化
+
+rbufpool 在 DDSI 初始化时创建，每个接收线程一个。默认配置参数：
+
+| 参数 | 默认值 | 含义 |
+|------|--------|------|
+| `rbuf_size` | 1,048,576 (1 MB) | 单个 rbuf 的大小 |
+| `rmsg_chunk_size` | 131,072 (128 KB) | 单条消息的最大 payload 大小 |
+
+初始化代码位于 [ddsi_init.c:918](../../source/cyclonedds/src/core/ddsi/src/ddsi_init.c#L918)：
+
+```c
+gv->recv_threads[i].arg.rbpool =
+    ddsi_rbufpool_new(&gv->logconfig, gv->config.rbuf_size,
+                      gv->config.rmsg_chunk_size);
+```
+
+接收线程在启动时通过 [ddsi_rbufpool_setowner](./01-rbufpool-rbuf.md#struct-ddsi_rbufpool) 设置自身为缓冲池的所有者。
+
+## 6. 设计决策亮点
+
+1. **顺序分配器（Bump Allocator）**：rbuf 使用简单的 `freeptr` 递增分配，分配开销为 $O(1)$，无碎片化问题
+
+2. **集中引用计数**：不为每个 rdata 单独计数，而是在 rmsg 级别统一计数。这大幅减少了原子操作的次数
+
+3. **偏置引用计数（Biased Refcount）**：
+   - 未提交时加 $2^{31}$ 偏置，用于检测非法操作
+   - 每个 rdata 进入 defrag 时加 $2^{20}$ 偏置，延迟到所有 reorder admin 处理完后再统一调整
+
+4. **单所有者约束**：只有拥有 rbufpool 的接收线程可以分配内存和增加引用计数，其他线程只能减少引用计数并释放。这消除了分配路径上的锁竞争
+
+5. **动态 chunk 链接**：当一条消息需要的管理数据超过单个 chunk 容量时，可以动态链接新的 chunk，避免预设固定上限
+
+## 7. 学习路线图
+
+建议按以下顺序学习各章节：
 
 ```mermaid
-graph TD
-    subgraph 存储层
-        A[ddsi_rbufpool] --> B[ddsi_rbuf]
-        B --> C[ddsi_rmsg]
-        C --> D[ddsi_rdata]
-    end
-    subgraph 处理管线
-        E[ddsi_defrag] --> F[ddsi_rsample]
-        F --> G[ddsi_reorder]
-        G --> H[rsample_chain]
-        H --> I[ddsi_dqueue]
-    end
-    D -->|输入| E
-    I -->|回调| J[应用层 handler]
-    C -.->|引用计数| K[内存回收]
+graph LR
+    A["01 rbufpool/rbuf<br/>内存池管理"] --> B["02 rmsg/rdata<br/>消息与引用计数"]
+    B --> C["03 defrag<br/>碎片重组"]
+    C --> D["04 reorder<br/>消息重排序"]
+    D --> E["05 dqueue<br/>投递队列"]
+
+    style A fill:#e8f5e9
+    style B fill:#e8f5e9
+    style C fill:#fff3e0
+    style D fill:#fff3e0
+    style E fill:#fce4ec
 ```
 
-> **图 3** rbuf 内存模型架构全景——存储层提供零拷贝内存基础，处理管线完成从原始分片到有序样本的转换
+| 章节 | 内容 | 关键问题 |
+|------|------|----------|
+| [01-rbufpool-rbuf](./01-rbufpool-rbuf.md) | 内存池与缓冲区管理 | rbuf 如何分配和回收？ |
+| [02-rmsg-rdata](./02-rmsg-rdata.md) | 消息结构与引用计数 | 引用计数偏置机制如何工作？ |
+| [03-defrag](./03-defrag.md) | 碎片重组 | 区间树如何高效合并片段？ |
+| [04-reorder](./04-reorder.md) | 消息重排序 | 三种 reorder 模式有何区别？ |
+| [05-dqueue](./05-dqueue.md) | 投递队列 | bubble 机制如何实现跨线程控制？ |
 
-### 4.1 源码文件导航
+📝 **本章小结**
+1. rbuf 内存模型由 rbufpool → rbuf → rmsg → rdata 四层构成
+2. 采用顺序分配 + 集中引用计数，实现高效零拷贝接收
+3. 单所有者约束消除了分配路径的锁竞争
+4. 数据从接收到投递经过 defrag → reorder → dqueue 三级流水线
+5. 偏置引用计数是本模块最精巧的设计之一
 
-> **图 4** 核心源码文件一览
-
-| 文件 | 职责 | 代码量 |
-|:--|:--|:--|
-| [ddsi_radmin.h](../../src/cyclonedds/src/core/ddsi/include/dds/ddsi/ddsi_radmin.h#L1) | 公共数据结构（rmsg_chunk, rmsg, rdata） | 135 行 |
-| [ddsi__radmin.h](../../src/cyclonedds/src/core/ddsi/src/ddsi__radmin.h#L1) | 内部 API 声明（全部模块的函数原型） | 262 行 |
-| [ddsi_radmin.c](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L1) | 全部实现（rbufpool/rbuf/rmsg/defrag/reorder/dqueue） | ~2900 行 |
-| [ddsi_receive.c](../../src/cyclonedds/src/core/ddsi/src/ddsi_receive.c#L1) | 接收路径（调用 radmin API 的消费者） | — |
-
-## 5. 学习路线图
-
-建议按以下顺序阅读后续章节，遵循 **先整体后局部、先接口后实现** 的原则：
-
-```mermaid
-graph TD
-    A["Ch.0 快速导览<br/>（本文）"] --> B["Ch.1 缓冲池与<br/>接收缓冲区"]
-    B --> C["Ch.2 消息管理与<br/>引用计数"]
-    C --> D["Ch.3 分片重组"]
-    C --> E["Ch.4 序列重排"]
-    D --> E
-    E --> F["Ch.5 投递队列"]
-```
-
-> **图 5** 推荐学习路线——实线箭头表示前置依赖
-
-### 5.1 各章节内容概要
-
-| 章节 | 文件 | 核心内容 | 前置知识 |
-|:--|:--|:--|:--|
-| Ch.1 | [01-rbufpool-rbuf.md](./01-rbufpool-rbuf.md) | 池化管理、线程所有权、顺序分配策略、rbuf 引用计数 | 本章 |
-| Ch.2 | [02-rmsg-rdata.md](./02-rmsg-rdata.md) | rmsg_chunk 链式扩展、双偏置引用计数、commit 语义、rdata 零拷贝 | Ch.1 |
-| Ch.3 | [03-defrag.md](./03-defrag.md) | AVL 树索引、区间合并算法、rsample 双态 union、丢弃策略 | Ch.2 |
-| Ch.4 | [04-reorder.md](./04-reorder.md) | 序列号区间树、三种模式、gap 处理、refcount 调整协议 | Ch.2, Ch.3 |
-| Ch.5 | [05-dqueue.md](./05-dqueue.md) | bubble 机制、背压控制、deaf 模式、线程模型 | Ch.4 |
-
-### 5.2 学习建议
-
-1. **先通读本章**，建立对整体架构和数据流的全局认知
-2. **Ch.1-Ch.2 是基础**，理解内存布局和引用计数机制后，后续章节才能理解为什么 defrag/reorder 中需要做各种 refcount 操作
-3. **Ch.3 和 Ch.4 可以交叉阅读**，两者都使用 AVL 树做区间管理，但解决的问题不同（字节级分片 vs 序列号级排序）
-4. **Ch.5 相对独立**，主要关注线程间协作模型，可在理解前四章后独立阅读
-
----
-
-> 📝 **文档信息**：本文档基于 Cyclone DDS 源码分析生成，源码版本对应 [ddsi_radmin.c](../../src/cyclonedds/src/core/ddsi/src/ddsi_radmin.c#L1) 的最新主线版本。
+🤔 **思考题**
+1. 为什么 rbuf 选择顺序分配（bump allocator）而不是空闲链表？在什么场景下这种选择可能不是最优的？
+2. 如果一个 UDP 包中包含多个 Data 子消息，它们的 rdata 如何共享同一个 rmsg 的引用计数？当部分 rdata 被投递、部分仍在 reorder 中时，内存何时释放？
+3. 为什么偏置引用计数分为 $2^{31}$（未提交偏置）和 $2^{20}$（rdata 偏置）两级？如果合并为一级会有什么问题？

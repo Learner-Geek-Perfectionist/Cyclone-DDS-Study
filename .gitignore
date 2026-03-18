@@ -40,4 +40,4 @@ __pycache__/
 test-results/
 coverage/
 
-docs/
+specs/

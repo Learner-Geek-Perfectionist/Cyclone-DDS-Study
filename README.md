@@ -2,7 +2,7 @@
 
 深入学习 [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds) 源码的个人学习仓库。
 
-学习文档使用 [Study-Master Skill](https://github.com/Learner-Geek-Perfectionist/claude-code-study-skills) 生成 —— 一个 Claude Code 自定义 Skill，利用 1M 上下文窗口对源码进行全量深度分析，输出教科书风格的学习笔记。
+学习文档使用 [agent-study-skills](https://github.com/Learner-Geek-Perfectionist/agent-study-skills) 仓库中的核心 Skill `study-master` 生成。它面向 Claude Code、Codex 等 agent CLI，用于系统化拆解开源项目源码、协议规范和语言框架内部机制，并输出教科书风格的学习文档。
 
 ## 项目结构
 
